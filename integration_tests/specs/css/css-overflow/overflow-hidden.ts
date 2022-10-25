@@ -11,11 +11,11 @@ describe('hidden', () => {
     }, [
       (image = createElement('img', {
           src: 'assets/100x100-green.png',
-      })) 
+      }))
     ]);
-  
+
     document.body.appendChild(container);
-  
+
     await snapshot(0.1);
   });
 
@@ -31,13 +31,13 @@ describe('hidden', () => {
     }, [
       (image = createElement('img', {
           src: 'assets/100x100-green.png',
-      })) 
+      }))
     ]);
-  
+
     image.addEventListener('appear', function onAppear() {});
-  
+
     document.body.appendChild(container);
-  
+
     await snapshot(0.1);
   });
 
@@ -49,8 +49,7 @@ describe('hidden', () => {
           'box-sizing': 'border-box',
         },
       },
-      [createText(`There should be a text for test scroll logic to uset.`)]
-
+      [createText(`There should be a text for test scroll logic to use`),]
     );
     let container = createElement('div', {
       style: {
@@ -78,7 +77,7 @@ describe('hidden', () => {
           'box-sizing': 'border-box',
         },
       },
-      [createText(`There should be a text for test scroll logic to uset.`)]
+      [createText(`There should be a text for test scroll logic to use`)]
 
     );
     let container = createElement('div', {
@@ -107,7 +106,7 @@ describe('hidden', () => {
           'box-sizing': 'border-box',
         },
       },
-      [createText(`There should be a text for test scroll logic to uset.`)]
+      [createText(`There should be a text for test scroll logic to use`)]
     );
     let container = createElement('div', {
       style: {
@@ -137,7 +136,7 @@ describe('hidden', () => {
           'box-sizing': 'border-box',
         },
       },
-      [createText(`There should be a text for test scroll logic to uset.`)]
+      [createText(`There should be a text for test scroll logic to use`)]
     );
     let container = createElement('div', {
       style: {
