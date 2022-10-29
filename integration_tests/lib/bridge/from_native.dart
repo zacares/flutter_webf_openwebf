@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:ffi/ffi.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -114,28 +115,57 @@ class MousePointer extends Struct {
 }
 
 void _simulatePointer(
-    Pointer<MousePointer> mousePointerList, int length, int pointer) {
+    Pointer<MousePointer> mousePointerList, int length, int pointer) async {
   List<PointerData> data = [];
 
   for (int i = 0; i < length; i++) {
-    int contextId = mousePointerList.elementAt(i).ref.contextId;
     double x = mousePointerList.elementAt(i).ref.x;
     double y = mousePointerList.elementAt(i).ref.y;
-    double change = mousePointerList.elementAt(i).ref.change;
-    data.add(PointerData(
-        // TODO: remove hardcode '360' width that for double testing in one flutter window
-        physicalX: (360 * contextId + x) * window.devicePixelRatio,
-        physicalY: (56.0 + y) * window.devicePixelRatio,
-        // MouseEvent will trigger [RendererBinding.dispatchEvent] -> [BaseMouseTracker.updateWithEvent]
-        // which handle extra mouse connection phase for [event.kind = PointerDeviceKind.mouse].
-        // Prefer to use touch event.
-        kind: PointerDeviceKind.touch,
-        change: _getPointerChange(change),
-        pointerIdentifier: pointer));
-  }
+    double lastX = i > 0 ? mousePointerList.elementAt(i - 1).ref.x : 0;
+    double lastY = i > 0 ? mousePointerList.elementAt(i - 1).ref.y : 0;
 
-  PointerDataPacket dataPacket = PointerDataPacket(data: data);
-  window.onPointerDataPacket!(dataPacket);
+    double change = mousePointerList.elementAt(i).ref.change;
+    print('get pointer data ${i} , ${x} ${y},  ${_getPointerChange(change)}');
+    if (i == 0) {
+      PointerEvent addPointer = PointerAddedEvent(position: Offset(x, y));
+      GestureBinding.instance.handlePointerEvent(addPointer);
+    }
+    switch (_getPointerChange(change)) {
+      case PointerChange.add:
+        PointerAddedEvent addEvent = PointerAddedEvent(
+            kind: PointerDeviceKind.mouse, position: Offset(x, y));
+        GestureBinding.instance.handlePointerEvent(addEvent);
+        break;
+      case PointerChange.remove:
+        PointerRemovedEvent removeEvent = PointerRemovedEvent(
+            kind: PointerDeviceKind.mouse, position: Offset(x, y));
+        GestureBinding.instance.handlePointerEvent(removeEvent);
+        break;
+      case PointerChange.down:
+        PointerDownEvent downEvent = PointerDownEvent(
+            kind: PointerDeviceKind.mouse, position: Offset(x, y));
+        GestureBinding.instance.handlePointerEvent(downEvent);
+        break;
+      case PointerChange.move:
+      case PointerChange.cancel:
+        await Future.delayed(const Duration(milliseconds: 6));
+        print(
+            'get move ${x} ${y} , ${lastX} ${lastY},${x - lastX} ${y - lastY}');
+        PointerMoveEvent moveEvent = PointerMoveEvent(
+            kind: PointerDeviceKind.mouse,
+            position: Offset(x, y),
+            delta: Offset(lastX - x, lastY - y));
+        GestureBinding.instance.handlePointerEvent(moveEvent);
+        break;
+      case PointerChange.up:
+        PointerUpEvent upEvent = PointerUpEvent(
+            kind: PointerDeviceKind.mouse, position: Offset(x, y));
+        GestureBinding.instance.handlePointerEvent(upEvent);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 final Pointer<NativeFunction<NativeSimulatePointer>> _nativeSimulatePointer =
