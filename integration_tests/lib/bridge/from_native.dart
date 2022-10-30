@@ -166,6 +166,8 @@ void _simulatePointer(
         break;
     }
   }
+
+  malloc.free(mousePointerList);
 }
 
 final Pointer<NativeFunction<NativeSimulatePointer>> _nativeSimulatePointer =

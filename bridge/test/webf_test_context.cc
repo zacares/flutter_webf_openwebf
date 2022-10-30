@@ -163,10 +163,7 @@ static JSValue simulatePointer(JSContext* ctx, JSValueConst this_val, int argc, 
 
   uint32_t pointer;
   JS_ToUint32(ctx, &pointer, pointerValue);
-
   context->dartMethodPtr()->simulatePointer(mousePointerList, length, pointer);
-
-  delete[] mousePointerList;
 
   return JS_NULL;
 }
