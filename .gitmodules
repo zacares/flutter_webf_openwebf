@@ -1,0 +1,3 @@
+[submodule "bridge/third_party/quickjs"]
+	path = bridge/third_party/quickjs
+	url = git@github.com:openwebf/quickjs.git

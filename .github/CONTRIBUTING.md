@@ -7,13 +7,19 @@
     * [Xcode](https://developer.apple.com/xcode/) (10.12) or later (Running on macOS or iOS)
     * [Android NDK](https://developer.android.com/studio/projects/install-ndk) version `23.2.8568313` (Running on Android)
 
-1. Install
+1. Clone the source code
+
+```bash
+git clone --recurse-submodules git@github.com:openwebf/webf.git
+```
+
+2. Install
 
     ```shell
     $ npm install
     ```
 
-2. Building bridge
+3. Building bridge
 
     Building bridge for all supported platform (macOS, linux, iOS, Android)
 
@@ -49,13 +55,13 @@
     $ npm run build:bridge:android
     ```
 
-3. Start example
+4. Start example
     ```shell
     $ cd webf/example
     $ flutter run
     ```
 
-4. Test (Unit Test and Integration Test)
+5. Test (Unit Test and Integration Test)
     ```shell
     $ npm test
     ```
