@@ -17,10 +17,10 @@ else ()
   add_definitions(-DENABLE_PROFILE=0)
 endif ()
 
-execute_process(
-  COMMAND bash "-c" "npm install"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_generator
-) # install code_generator deps
+#execute_process(
+#  COMMAND bash "-c" "npm install"
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/code_generator
+#) # install code_generator deps
 
 execute_process(
   COMMAND bash "-c" "npm run build"
