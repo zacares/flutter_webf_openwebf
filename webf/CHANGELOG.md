@@ -1,3 +1,10 @@
+## 0.13.3-beta.1
+
+* fix: fix history pushState(). https://github.com/openwebf/webf/pull/218
+* fix: fix scrollable content not work when toggle display. https://github.com/openwebf/webf/pull/220
+* fix: fix widget element unmount renderObject. https://github.com/openwebf/webf/pull/221
+* fix: fix exception when toggle display and previous sibling is positioned element. https://github.com/openwebf/webf/pull/223
+
 ## 0.13.2+1
 
 * remove logs
