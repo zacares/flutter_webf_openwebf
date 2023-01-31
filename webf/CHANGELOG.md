@@ -1,3 +1,8 @@
+## 0.13.3-beta.2
+
+* Add window.getComputedStyle() support. https://github.com/openwebf/webf/pull/183
+* fix renderObject didn't disposed when frame update paused. https://github.com/openwebf/webf/pull/231
+
 ## 0.13.3-beta.1
 
 * fix: fix history pushState(). https://github.com/openwebf/webf/pull/218
