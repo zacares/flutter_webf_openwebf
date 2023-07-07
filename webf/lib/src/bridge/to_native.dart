@@ -485,10 +485,12 @@ void flushUICommand(WebFViewController view) {
           view.disposeBindingObject(nativePtr.cast<NativeBindingObject>());
           break;
         case UICommandType.addEvent:
-          view.addEvent(nativePtr.cast<NativeBindingObject>(), command.args);
+          Pointer<AddEventListenerOptions> eventListenerOptions = command.nativePtr2.cast<AddEventListenerOptions>();
+          view.addEvent(nativePtr.cast<NativeBindingObject>(), command.args, addEventListenerOptions: eventListenerOptions);
           break;
         case UICommandType.removeEvent:
-          view.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args);
+          bool isCapture = command.nativePtr2.address == 1;
+          view.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args, isCapture: isCapture);
           break;
         case UICommandType.insertAdjacentNode:
           view.insertAdjacentNode(
