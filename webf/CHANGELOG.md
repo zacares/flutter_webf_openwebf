@@ -1,3 +1,10 @@
+## 0.15.0-beta.3+1
+
+**Bug Fixed**
+
+1. fix: fix use css vars with initial. https://github.com/openwebf/webf/pull/421/commits/1da2e5899c53e82a31271c26de3333168e780134
+2. fix: fix @font-face url resolve with different url bases. https://github.com/openwebf/webf/pull/426
+
 ## 0.15.0-beta.3
 
 **Features**
