@@ -236,7 +236,7 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const {
 }
 
 bool HTMLCollection::NamedPropertyQuery(const AtomicString& name, ExceptionState&) {
-  return namedItem(name);
+  return namedItem(name) != nullptr;
 }
 
 void HTMLCollection::NamedPropertyEnumerator(std::vector<AtomicString>& names, ExceptionState&) {
