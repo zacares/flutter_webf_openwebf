@@ -1,3 +1,19 @@
+## 0.15.0-beta.3
+
+**Features**
+
+1. feat: optimize the webf_bridge and quickjs binary size. https://github.com/openwebf/webf/pull/414
+2. feat: support CSS `initial` length value. https://github.com/openwebf/webf/pull/421
+3. feat: optimize Element.children() and Document.all() performance. https://github.com/openwebf/webf/pull/424
+4. feat: add <circle> <ellipse> element for svg. https://github.com/openwebf/webf/pull/423
+
+**Bug Fixed**
+
+1. fix: fix toggle position: fixed on bodyElement with other fixed elements. https://github.com/openwebf/webf/pull/416
+2. fix: css nth-child not work. https://github.com/openwebf/webf/pull/417
+3. fix: fix Node.childNodes didn't update when nodes changed. https://github.com/openwebf/webf/pull/419
+4. fix: fix loading fonts cause assertion when remove or attach RenderObjects. https://github.com/openwebf/webf/pull/425
+
 ## 0.14.1
 
 **Features**
