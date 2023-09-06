@@ -11,6 +11,7 @@ import 'package:webf/launcher.dart';
 import 'binding.dart';
 import 'from_native.dart';
 import 'to_native.dart';
+import 'dedicated_worker_protocol.dart';
 
 int _contextId = 0;
 
@@ -26,7 +27,7 @@ class DartContext {
   final Pointer<Void> pointer;
 }
 
-DartContext dartContext = DartContext();
+DartContext? dartContextForUIThread;
 
 /// Init bridge
 int initBridge(WebFViewController view) {
@@ -42,7 +43,13 @@ int initBridge(WebFViewController view) {
   }
 
   int pageId = newContextId();
-  allocateNewPage(pageId);
+
+  if (view.dedicatedJSThread == true) {
+    view.sendMessageToDedicatedThread(AllocateNewPage(view.dedicatedDartContext!, pageId));
+  } else {
+    dartContextForUIThread = DartContext();
+    allocateNewPage(dartContextForUIThread!, pageId);
+  }
 
   return pageId;
 }

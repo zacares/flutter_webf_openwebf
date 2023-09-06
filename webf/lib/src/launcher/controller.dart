@@ -23,7 +23,10 @@ import 'package:webf/dom.dart';
 import 'package:webf/gesture.dart';
 import 'package:webf/rendering.dart';
 import 'package:webf/devtools.dart';
-import 'package:webf/webf.dart';
+import 'package:webf/module.dart';
+import 'package:webf/bridge.dart';
+import 'package:webf/widget.dart';
+import 'package:webf/foundation.dart';
 
 // Error handler when load bundle failed.
 typedef LoadHandler = void Function(WebFController controller);
@@ -147,6 +150,36 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
 
   Color? background;
 
+  final bool? dedicatedJSThread;
+  ReceivePort? _dedicatedJSThreadReceivePort;
+  SendPort? _dedicatedJSThreadSendPort;
+  DartContext? dedicatedDartContext;
+  Isolate? _dedicatedWorker;
+
+  final List<dynamic> _pendingMessageToDedicatedThread = [];
+  void sendMessageToDedicatedThread(data) {
+    if (_dedicatedJSThreadSendPort == null) {
+      _pendingMessageToDedicatedThread.add(data);
+    } else {
+      _dedicatedJSThreadSendPort!.send(data);
+    }
+  }
+
+  void _handleDedicatedThreadResponse(data) {
+    if (data is SendPort) {
+      _dedicatedJSThreadSendPort = data;
+      if (_pendingMessageToDedicatedThread.isNotEmpty) {
+        for (int i = 0; i < _pendingMessageToDedicatedThread.length; i ++) {
+          _dedicatedJSThreadSendPort!.send(_pendingMessageToDedicatedThread[i]);
+        }
+        _pendingMessageToDedicatedThread.clear();
+      }
+      rootController._isReadyToExecute.complete();
+    } else if (data is InitDartContextResponse) {
+      dedicatedDartContext = data.dartContext;
+    }
+  }
+
   WebFViewController(this._viewportWidth, this._viewportHeight,
       {this.background,
       this.enableDebug = false,
@@ -155,6 +188,7 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
       this.navigationDelegate,
       this.gestureListener,
       this.initialCookies,
+      this.dedicatedJSThread,
       // Viewport won't change when kraken page reload, should reuse previous page's viewportBox.
       RenderViewportBox? originalViewport}) {
     if (enableDebug) {
@@ -166,6 +200,15 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
       PerformanceTiming.instance().mark(PERF_BRIDGE_INIT_START);
     }
     BindingBridge.setup();
+
+    if (dedicatedJSThread == true) {
+      _dedicatedJSThreadReceivePort = ReceivePort();
+      _dedicatedJSThreadReceivePort!.listen(_handleDedicatedThreadResponse);
+      Isolate.spawn(initializeDedicatedWorker, _dedicatedJSThreadReceivePort!.sendPort).then((Isolate isolate) {
+        _dedicatedWorker = isolate;
+      });
+    }
+
     _contextId = contextId ?? initBridge(this);
 
     if (kProfileMode) {
@@ -189,17 +232,18 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
 
     defineBuiltInElements();
 
-    // Wait viewport mounted on the outside renderObject tree.
-    Future.microtask(() {
-      // Execute UICommand.createDocument and UICommand.createWindow to initialize window and document.
-      flushUICommand(this);
-    });
+    if (dedicatedJSThread != true) {
+      // Wait viewport mounted on the outside renderObject tree.
+      Future.microtask(() {
+        // Execute UICommand.createDocument and UICommand.createWindow to initialize window and document.
+        flushUICommand(this);
+      });
+      SchedulerBinding.instance.addPostFrameCallback(_postFrameCallback);
+    }
 
     if (kProfileMode) {
       PerformanceTiming.instance().mark(PERF_ELEMENT_MANAGER_INIT_END);
     }
-
-    SchedulerBinding.instance.addPostFrameCallback(_postFrameCallback);
   }
 
   void _postFrameCallback(Duration timeStamp) {
@@ -319,7 +363,11 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
     // Should clear previous page cached ui commands
     clearUICommand(_contextId);
 
-    disposePage(_contextId);
+    if (dedicatedJSThread == true) {
+      _dedicatedWorker?.kill(priority: Isolate.beforeNextEvent);
+    } else {
+      disposePage(dartContextForUIThread!, _contextId);
+    }
 
     clearCssLength();
 
@@ -773,6 +821,8 @@ class WebFController {
   OnCustomElementAttached? onCustomElementAttached;
   OnCustomElementDetached? onCustomElementDetached;
 
+  final bool? dedicatedJSThread;
+
   final List<Cookie>? initialCookies;
 
   String? _name;
@@ -813,6 +863,7 @@ class WebFController {
     this.httpClientInterceptor,
     this.devToolsService,
     this.uriParser,
+    this.dedicatedJSThread,
     this.initialCookies,
   })  : _name = name,
         _entrypoint = entrypoint,
@@ -833,7 +884,8 @@ class WebFController {
       rootController: this,
       navigationDelegate: navigationDelegate ?? WebFNavigationDelegate(),
       gestureListener: _gestureListener,
-      initialCookies: initialCookies
+      initialCookies: initialCookies,
+      dedicatedJSThread: dedicatedJSThread,
     );
 
     if (kProfileMode) {
@@ -904,27 +956,27 @@ class WebFController {
 
     // Wait for next microtask to make sure C++ native Elements are GC collected.
     Completer completer = Completer();
-    Future.microtask(() {
-      _module.dispose();
-      _view.dispose();
-      // RenderViewportBox will not disposed when reload, just remove all children and clean all resources.
-      _view.viewport.reload();
-
-      allocateNewPage(_view.contextId);
-
-      _view = WebFViewController(view.viewportWidth, view.viewportHeight,
-          background: _view.background,
-          enableDebug: _view.enableDebug,
-          contextId: _view.contextId,
-          rootController: this,
-          navigationDelegate: _view.navigationDelegate,
-          gestureListener: _view.gestureListener,
-          originalViewport: _view.viewport);
-
-      _module = WebFModuleController(this, _view.contextId);
-
-      completer.complete();
-    });
+    // Future.microtask(() {
+    //   _module.dispose();
+    //   _view.dispose();
+    //   // RenderViewportBox will not disposed when reload, just remove all children and clean all resources.
+    //   _view.viewport.reload();
+    //
+    //   allocateNewPage(_view.contextId);
+    //
+    //   _view = WebFViewController(view.viewportWidth, view.viewportHeight,
+    //       background: _view.background,
+    //       enableDebug: _view.enableDebug,
+    //       contextId: _view.contextId,
+    //       rootController: this,
+    //       navigationDelegate: _view.navigationDelegate,
+    //       gestureListener: _view.gestureListener,
+    //       originalViewport: _view.viewport);
+    //
+    //   _module = WebFModuleController(this, _view.contextId);
+    //
+    //   completer.complete();
+    // });
 
     return completer.future;
   }
@@ -1035,8 +1087,14 @@ class WebFController {
     return '${uri.scheme}://${uri.host}:${uri.port}';
   }
 
+  final Completer<void> _isReadyToExecute = Completer();
+
   Future<void> executeEntrypoint(
       {bool shouldResolve = true, bool shouldEvaluate = true, AnimationController? animationController}) async {
+    if (dedicatedJSThread == true) {
+      await _isReadyToExecute.future;
+    }
+
     if (_entrypoint != null && shouldResolve) {
       await Future.wait([
         _resolveEntrypoint(),
@@ -1106,40 +1164,40 @@ class WebFController {
         PerformanceTiming.instance().mark(PERF_JS_BUNDLE_EVAL_START);
       }
 
-      // entry point start parse.
-      _view.document.parsing = true;
-
-      Uint8List data = entrypoint.data!;
-      if (entrypoint.isJavascript) {
-        // Prefer sync decode in loading entrypoint.
-        await evaluateScripts(contextId, await resolveStringFromData(data, preferSync: true), url: url);
-      } else if (entrypoint.isBytecode) {
-        evaluateQuickjsByteCode(contextId, data);
-      } else if (entrypoint.isHTML) {
-        parseHTML(contextId, await resolveStringFromData(data));
-      } else if (entrypoint.contentType.primaryType == 'text') {
-        // Fallback treating text content as JavaScript.
-        try {
-          await evaluateScripts(contextId, await resolveStringFromData(data, preferSync: true), url: url);
-        } catch (error) {
-          print('Fallback to execute JavaScript content of $url');
-          rethrow;
-        }
-      } else {
-        // The resource type can not be evaluated.
-        throw FlutterError('Can\'t evaluate content of $url');
-      }
-
-      // entry point end parse.
-      _view.document.parsing = false;
-
-      // Should check completed when parse end.
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        // UICommand list is read in the next frame, so we need to determine whether there are labels
-        // such as images and scripts after it to check is completed.
-        checkCompleted();
-      });
-      SchedulerBinding.instance.scheduleFrame();
+      // // entry point start parse.
+      // _view.document.parsing = true;
+      //
+      // Uint8List data = entrypoint.data!;
+      // if (entrypoint.isJavascript) {
+      //   // Prefer sync decode in loading entrypoint.
+      //   await evaluateScripts(contextId, await resolveStringFromData(data, preferSync: true), url: url);
+      // } else if (entrypoint.isBytecode) {
+      //   evaluateQuickjsByteCode(contextId, data);
+      // } else if (entrypoint.isHTML) {
+      //   parseHTML(contextId, await resolveStringFromData(data));
+      // } else if (entrypoint.contentType.primaryType == 'text') {
+      //   // Fallback treating text content as JavaScript.
+      //   try {
+      //     await evaluateScripts(contextId, await resolveStringFromData(data, preferSync: true), url: url);
+      //   } catch (error) {
+      //     print('Fallback to execute JavaScript content of $url');
+      //     rethrow;
+      //   }
+      // } else {
+      //   // The resource type can not be evaluated.
+      //   throw FlutterError('Can\'t evaluate content of $url');
+      // }
+      //
+      // // entry point end parse.
+      // _view.document.parsing = false;
+      //
+      // // Should check completed when parse end.
+      // SchedulerBinding.instance.addPostFrameCallback((_) {
+      //   // UICommand list is read in the next frame, so we need to determine whether there are labels
+      //   // such as images and scripts after it to check is completed.
+      //   checkCompleted();
+      // });
+      // SchedulerBinding.instance.scheduleFrame();
 
       if (kProfileMode) {
         PerformanceTiming.instance().mark(PERF_JS_BUNDLE_EVAL_END);

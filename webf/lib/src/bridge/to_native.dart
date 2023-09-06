@@ -231,7 +231,7 @@ typedef DartDisposePage = void Function(Pointer<Void>, Pointer<Void> page);
 final DartDisposePage _disposePage =
     WebFDynamicLibrary.ref.lookup<NativeFunction<NativeDisposePage>>('disposePage').asFunction();
 
-void disposePage(int contextId) {
+void disposePage(DartContext dartContext, int contextId) {
   Pointer<Void> page = _allocatedPages[contextId]!;
   _disposePage(dartContext.pointer, page);
   _allocatedPages.remove(contextId);
@@ -243,7 +243,7 @@ typedef DartAllocateNewPage = Pointer<Void> Function(Pointer<Void>, int);
 final DartAllocateNewPage _allocateNewPage =
     WebFDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewPage>>('allocateNewPage').asFunction();
 
-void allocateNewPage(int targetContextId) {
+void allocateNewPage(DartContext dartContext, int targetContextId) {
   Pointer<Void> page = _allocateNewPage(dartContext.pointer, targetContextId);
   assert(!_allocatedPages.containsKey(targetContextId));
   _allocatedPages[targetContextId] = page;

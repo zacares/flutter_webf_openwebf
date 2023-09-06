@@ -48,9 +48,18 @@ class WebF extends StatefulWidget {
   // Trigger when webf controller once created.
   final OnControllerCreated? onControllerCreated;
 
+  // Run the JavaScript engine in a dedicated Dart worker thread instead of the Flutter.ui thread.
+  // It cannot be updated once the WebF widget is already initialized.
+  // Advantage: Effective avoid jank when the running JavaScript codes takes too much time during scrolling or running animations.
+  // Appropriate user case: You have a page with long list and you want the list to run smoothly with animations when loading more items.
+  // Disadvantage:  It significantly increases the communication time between JS and Dart, which could cause performance reduction when
+  // heavily relying on data exchange between Dart and JavaScript.
+  final bool? dedicatedJSThread;
+
   final LoadErrorHandler? onLoadError;
 
   final LoadHandler? onLoad;
+
   // https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event
   final LoadHandler? onDOMContentLoaded;
 
@@ -115,6 +124,7 @@ class WebF extends StatefulWidget {
       // webf's http client interceptor.
       this.httpClientInterceptor,
       this.uriParser,
+      this.dedicatedJSThread,
       this.routeObserver,
       this.initialCookies,
       // webf's viewportWidth options only works fine when viewportWidth is equal to window.physicalSize.width / window.devicePixelRatio.
@@ -148,6 +158,7 @@ class WebFState extends State<WebF> with RouteAware {
   bool _disposed = false;
 
   final Set<WebFWidgetElementToWidgetAdapter> customElementWidgets = {};
+
   void onCustomElementWidgetAdd(WebFWidgetElementToWidgetAdapter adapter) {
     Future.microtask(() {
       if (!_disposed) {
@@ -314,6 +325,7 @@ class WebFRootRenderObjectWidget extends MultiChildRenderObjectWidget {
         onDOMContentLoaded: _webfWidget.onDOMContentLoaded,
         onLoadError: _webfWidget.onLoadError,
         onJSError: _webfWidget.onJSError,
+        dedicatedJSThread: _webfWidget.dedicatedJSThread,
         methodChannel: _webfWidget.javaScriptChannel,
         gestureListener: _webfWidget.gestureListener,
         navigationDelegate: _webfWidget.navigationDelegate,
@@ -341,28 +353,28 @@ class WebFRootRenderObjectWidget extends MultiChildRenderObjectWidget {
   @override
   void updateRenderObject(BuildContext context, covariant RenderObject renderObject) {
     super.updateRenderObject(context, renderObject);
-    WebFController controller = (context as _WebFRenderObjectElement).controller!;
-    if (controller.disposed) return;
-
-    controller.name = shortHash(_webfWidget);
-
-    bool viewportWidthHasChanged = controller.view.viewportWidth != _webfWidget.viewportWidth;
-    bool viewportHeightHasChanged = controller.view.viewportHeight != _webfWidget.viewportHeight;
-
-    double viewportWidth = _webfWidget.viewportWidth ?? window.physicalSize.width / window.devicePixelRatio;
-    double viewportHeight = _webfWidget.viewportHeight ?? window.physicalSize.height / window.devicePixelRatio;
-
-    if (controller.view.document.documentElement == null) return;
-
-    if (viewportWidthHasChanged) {
-      controller.view.viewportWidth = viewportWidth;
-      controller.view.document.documentElement!.renderStyle.width = CSSLengthValue(viewportWidth, CSSLengthType.PX);
-    }
-
-    if (viewportHeightHasChanged) {
-      controller.view.viewportHeight = viewportHeight;
-      controller.view.document.documentElement!.renderStyle.height = CSSLengthValue(viewportHeight, CSSLengthType.PX);
-    }
+    // WebFController controller = (context as _WebFRenderObjectElement).controller!;
+    // if (controller.disposed) return;
+    //
+    // controller.name = shortHash(_webfWidget);
+    //
+    // bool viewportWidthHasChanged = controller.view.viewportWidth != _webfWidget.viewportWidth;
+    // bool viewportHeightHasChanged = controller.view.viewportHeight != _webfWidget.viewportHeight;
+    //
+    // double viewportWidth = _webfWidget.viewportWidth ?? window.physicalSize.width / window.devicePixelRatio;
+    // double viewportHeight = _webfWidget.viewportHeight ?? window.physicalSize.height / window.devicePixelRatio;
+    //
+    // if (controller.view.document.documentElement == null) return;
+    //
+    // if (viewportWidthHasChanged) {
+    //   controller.view.viewportWidth = viewportWidth;
+    //   controller.view.document.documentElement!.renderStyle.width = CSSLengthValue(viewportWidth, CSSLengthType.PX);
+    // }
+    //
+    // if (viewportHeightHasChanged) {
+    //   controller.view.viewportHeight = viewportHeight;
+    //   controller.view.document.documentElement!.renderStyle.height = CSSLengthValue(viewportHeight, CSSLengthType.PX);
+    // }
   }
 
   @override
