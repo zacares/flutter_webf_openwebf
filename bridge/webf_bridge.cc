@@ -45,7 +45,8 @@ void* initDartIsolateContext(uint64_t* dart_methods, int32_t dart_methods_len) {
 
 void* allocateNewPage(void* dart_isolate_context, int32_t targetContextId) {
   assert(dart_isolate_context != nullptr);
-  WEBF_LOG(VERBOSE) << "DART ISOLATE CONTEXT:" << dart_isolate_context << "current thread " << std::this_thread::get_id();
+  WEBF_LOG(VERBOSE) << "DART ISOLATE CONTEXT:" << dart_isolate_context << "current thread "
+                    << std::this_thread::get_id();
   auto page =
       std::make_unique<webf::WebFPage>((webf::DartIsolateContext*)dart_isolate_context, targetContextId, nullptr);
   void* ptr = page.get();
