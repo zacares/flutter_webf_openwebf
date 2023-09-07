@@ -242,7 +242,7 @@ class IntersectionObserverLayer extends ContainerLayer {
     // of `addPostFrameCallback` or `scheduleFrameCallback` so that work will
     // be done even if a new frame isn't scheduled and without unnecessarily
     // scheduling a new frame.
-    SchedulerBinding.instance.scheduleTask<void>(_processCallbacks, Priority.touch);
+    SchedulerBinding.instance?.scheduleTask<void>(_processCallbacks, Priority.touch);
   }
 
   /// Computes the bounds for the corresponding element in
@@ -255,7 +255,7 @@ class IntersectionObserverLayer extends ContainerLayer {
   // https://github.com/google/flutter.widgets/blob/master/packages/visibility_detector/lib/src/visibility_detector_layer.dart#L130
   // Computes the accumulated clipping bounds, in global coordinates.
   Rect _computeClipRect() {
-    var clipRect = Offset.zero & RendererBinding.instance.renderView.size;
+    var clipRect = Offset.zero & RendererBinding.instance!.renderView.size;
 
     var parentLayer = parent;
     while (parentLayer != null) {

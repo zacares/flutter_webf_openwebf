@@ -4,6 +4,7 @@
  */
 
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -61,12 +62,12 @@ class BoxFitImage extends ImageProvider<BoxFitImageKey> {
     try {
       bytes = await loadImage(url);
     } on FlutterError {
-      PaintingBinding.instance.imageCache.evict(key);
+      PaintingBinding.instance?.imageCache?.evict(key);
       rethrow;
     }
 
     if (bytes.isEmpty) {
-      PaintingBinding.instance.imageCache.evict(key);
+      PaintingBinding.instance?.imageCache?.evict(key);
       throw StateError('Unable to read data');
     }
 
@@ -92,7 +93,7 @@ class BoxFitImage extends ImageProvider<BoxFitImageKey> {
   DimensionedMultiFrameImageStreamCompleter? _imageStreamCompleter;
 
   @override
-  ImageStreamCompleter loadBuffer(BoxFitImageKey key, DecoderBufferCallback decode) {
+  ImageStreamCompleter load(BoxFitImageKey key, DecoderCallback decode) {
     return _imageStreamCompleter = DimensionedMultiFrameImageStreamCompleter(
       codec: _loadAsync(key),
       scale: 1.0,
@@ -109,22 +110,20 @@ class BoxFitImage extends ImageProvider<BoxFitImageKey> {
   void resolveStreamForKey(
       ImageConfiguration configuration, ImageStream stream, BoxFitImageKey key, ImageErrorListener handleError) {
     if (stream.completer != null) {
-      final ImageStreamCompleter? completer = PaintingBinding.instance.imageCache.putIfAbsent(
+      final ImageStreamCompleter? completer = PaintingBinding.instance!.imageCache!.putIfAbsent(
         key,
-        () => stream.completer!,
+            () => stream.completer!,
         onError: handleError,
       );
       assert(identical(completer, stream.completer));
       return;
     }
-    final ImageStreamCompleter? completer = PaintingBinding.instance.imageCache.putIfAbsent(
+    final ImageStreamCompleter? completer = PaintingBinding.instance!.imageCache!.putIfAbsent(
       key,
-      () => loadBuffer(key, PaintingBinding.instance.instantiateImageCodecFromBuffer),
+      () => load(key, PaintingBinding.instance!.instantiateImageCodec),
       onError: handleError,
     );
-    if (_imageStreamCompleter == null &&
-        completer is DimensionedMultiFrameImageStreamCompleter &&
-        onImageLoad != null) {
+    if (_imageStreamCompleter == null && completer is DimensionedMultiFrameImageStreamCompleter && onImageLoad != null) {
       completer.dimension.then((Dimension dimension) {
         onImageLoad!(dimension.width, dimension.height);
       });

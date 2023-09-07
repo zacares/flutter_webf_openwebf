@@ -463,7 +463,7 @@ void flushUICommand(WebFViewController view) {
 
   List<UICommand> commands = readNativeUICommandToDart(nativeCommandItems, commandLength, view.contextId);
 
-  SchedulerBinding.instance.scheduleFrame();
+  SchedulerBinding.instance?.scheduleFrame();
 
   Map<int, bool> pendingStylePropertiesTargets = {};
   Set<int> pendingRecalculateTargets = {};

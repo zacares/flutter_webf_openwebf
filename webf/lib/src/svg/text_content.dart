@@ -3,7 +3,8 @@
  */
 
 import 'package:webf/svg.dart';
+import 'package:webf/foundation.dart';
 
 class SVGTextContentElement extends SVGGraphicsElement {
-  SVGTextContentElement(super.context);
+  SVGTextContentElement([BindingContext? context]): super(context);
 }

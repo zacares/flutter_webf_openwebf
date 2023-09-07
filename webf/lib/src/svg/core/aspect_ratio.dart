@@ -18,54 +18,54 @@ enum SVGPreserveAspectRatioAlign {
   xMaxYMid,
   xMinYMax,
   xMidYMax,
-  xMaxYMax;
+  xMaxYMax
+}
 
-  get xRatio {
-    switch (this) {
-      case SVGPreserveAspectRatioAlign.none:
-      case SVGPreserveAspectRatioAlign.xMinYMin:
-      case SVGPreserveAspectRatioAlign.xMinYMid:
-      case SVGPreserveAspectRatioAlign.xMinYMax:
-        return 0;
-      case SVGPreserveAspectRatioAlign.unknown:
-      case SVGPreserveAspectRatioAlign.xMidYMin:
-      case SVGPreserveAspectRatioAlign.xMidYMid:
-      case SVGPreserveAspectRatioAlign.xMidYMax:
-        return 0.5;
-      case SVGPreserveAspectRatioAlign.xMaxYMin:
-      case SVGPreserveAspectRatioAlign.xMaxYMid:
-      case SVGPreserveAspectRatioAlign.xMaxYMax:
-        return 1;
-    }
+double getXRatio(SVGPreserveAspectRatioAlign align) {
+  switch (align) {
+    case SVGPreserveAspectRatioAlign.none:
+    case SVGPreserveAspectRatioAlign.xMinYMin:
+    case SVGPreserveAspectRatioAlign.xMinYMid:
+    case SVGPreserveAspectRatioAlign.xMinYMax:
+      return 0;
+    case SVGPreserveAspectRatioAlign.unknown:
+    case SVGPreserveAspectRatioAlign.xMidYMin:
+    case SVGPreserveAspectRatioAlign.xMidYMid:
+    case SVGPreserveAspectRatioAlign.xMidYMax:
+      return 0.5;
+    case SVGPreserveAspectRatioAlign.xMaxYMin:
+    case SVGPreserveAspectRatioAlign.xMaxYMid:
+    case SVGPreserveAspectRatioAlign.xMaxYMax:
+      return 1;
   }
+}
 
-  get yRatio {
-    switch (this) {
-      case SVGPreserveAspectRatioAlign.none:
-      case SVGPreserveAspectRatioAlign.xMinYMin:
-      case SVGPreserveAspectRatioAlign.xMidYMin:
-      case SVGPreserveAspectRatioAlign.xMaxYMin:
-        return 0;
-      case SVGPreserveAspectRatioAlign.unknown:
-      case SVGPreserveAspectRatioAlign.xMinYMid:
-      case SVGPreserveAspectRatioAlign.xMidYMid:
-      case SVGPreserveAspectRatioAlign.xMaxYMid:
-        return 0.5;
-      case SVGPreserveAspectRatioAlign.xMinYMax:
-      case SVGPreserveAspectRatioAlign.xMidYMax:
-      case SVGPreserveAspectRatioAlign.xMaxYMax:
-        return 1;
-    }
+double getYRatio(SVGPreserveAspectRatioAlign align) {
+  switch (align) {
+    case SVGPreserveAspectRatioAlign.none:
+    case SVGPreserveAspectRatioAlign.xMinYMin:
+    case SVGPreserveAspectRatioAlign.xMidYMin:
+    case SVGPreserveAspectRatioAlign.xMaxYMin:
+      return 0;
+    case SVGPreserveAspectRatioAlign.unknown:
+    case SVGPreserveAspectRatioAlign.xMinYMid:
+    case SVGPreserveAspectRatioAlign.xMidYMid:
+    case SVGPreserveAspectRatioAlign.xMaxYMid:
+      return 0.5;
+    case SVGPreserveAspectRatioAlign.xMinYMax:
+    case SVGPreserveAspectRatioAlign.xMidYMax:
+    case SVGPreserveAspectRatioAlign.xMaxYMax:
+      return 1;
   }
 }
 
 enum SVGPreserveAspectRatioMeetOrSlice { unknown, meet, slice }
 
 final _SVGPreserveAspectRatioAlignMap =
-    SVGPreserveAspectRatioAlign.values.asNameMap();
+SVGPreserveAspectRatioAlign.values.asNameMap();
 
 final _SVGPreserveAspectRatioMeetOrSlice =
-    SVGPreserveAspectRatioMeetOrSlice.values.asNameMap();
+SVGPreserveAspectRatioMeetOrSlice.values.asNameMap();
 
 // spec: https://svgwg.org/svg2-draft/coords.html#PreserveAspectRatioAttribute
 class SVGPreserveAspectRatio {
@@ -93,15 +93,14 @@ class SVGPreserveAspectRatio {
   final SVGPreserveAspectRatioAlign align;
   final SVGPreserveAspectRatioMeetOrSlice meetOrSlice;
 
-  const SVGPreserveAspectRatio(
-      [this.align = SVGPreserveAspectRatioAlign.xMidYMid,
-      this.meetOrSlice = SVGPreserveAspectRatioMeetOrSlice.meet]);
+  const SVGPreserveAspectRatio([this.align = SVGPreserveAspectRatioAlign.xMidYMid,
+    this.meetOrSlice = SVGPreserveAspectRatioMeetOrSlice.meet]);
 
   getMatrix(Rect viewBox, Size size) {
     final matrix = Matrix4.identity();
 
-    final xRatio = align.xRatio;
-    final yRatio = align.yRatio;
+    final xRatio = getXRatio(align);
+    final yRatio = getYRatio(align);
     final scaleX = size.width / viewBox.width;
     final scaleY = size.height / viewBox.height;
     // move to center

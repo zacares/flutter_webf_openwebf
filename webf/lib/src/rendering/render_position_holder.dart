@@ -35,7 +35,7 @@ class RenderPositionPlaceholder extends RenderPreferredSize {
     super.performLayout();
     // The relative offset of positioned renderBox are depends on positionHolder' offset.
     // When the placeHolder got layout, should notify the positioned renderBox to layout again.
-    SchedulerBinding.instance.scheduleFrameCallback((_) {
+    SchedulerBinding.instance?.scheduleFrameCallback((_) {
       positioned?.markNeedsLayout();
     });
   }

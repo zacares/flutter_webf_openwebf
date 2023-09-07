@@ -2,6 +2,7 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
+import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -87,7 +88,7 @@ class CSSFontFace {
           Uint8List content = targetFont.content;
           Future<ByteData> bytes = Future.value(ByteData.sublistView(content));
           FontLoader loader = FontLoader(fontFamily);
-          SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+          SchedulerBinding.instance?.addPostFrameCallback((timeStamp) {
             loader.addFont(bytes);
             loader.load();
           });
@@ -99,7 +100,7 @@ class CSSFontFace {
           assert(bundle.isResolved, 'Failed to obtain $url');
           FontLoader loader = FontLoader(removeQuotationMark(fontFamily));
           Future<ByteData> bytes = Future.value(bundle.data?.buffer.asByteData());
-          SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+          SchedulerBinding.instance?.addPostFrameCallback((timeStamp) {
             loader.addFont(bytes);
             loader.load();
           });

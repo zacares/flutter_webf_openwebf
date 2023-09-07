@@ -3,11 +3,13 @@
  */
 
 import 'dart:ui';
-
+import 'package:webf/css.dart';
+import 'package:webf/svg.dart';
 import 'shape.dart';
 
 class RenderSVGPath extends RenderSVGShape {
-  RenderSVGPath({required super.renderStyle, super.element});
+  RenderSVGPath({required CSSRenderStyle renderStyle, SVGGeometryElement? element})
+      : super(renderStyle: renderStyle, element: element);
 
   @override
   Path asPath() {

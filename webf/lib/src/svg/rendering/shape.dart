@@ -5,6 +5,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:webf/rendering.dart';
 import 'package:webf/svg.dart';
+import 'package:webf/css.dart';
 
 abstract class RenderSVGShape extends RenderBoxModel {
   bool _needUpdateShape = true;
@@ -12,9 +13,9 @@ abstract class RenderSVGShape extends RenderBoxModel {
   SVGGeometryElement? element;
 
   RenderSVGShape({
-    required super.renderStyle,
+    required CSSRenderStyle renderStyle,
     this.element,
-  });
+  }): super(renderStyle: renderStyle);
 
   Path? _path;
   Path get path => _path ??= asPath();
@@ -25,7 +26,7 @@ abstract class RenderSVGShape extends RenderBoxModel {
     final stroke = renderStyle.stroke;
     final fillRule = renderStyle.fillRule;
 
-    path.fillType = fillRule.fillType;
+    path.fillType = getFillType(fillRule);
 
     if (!fill.isNone) {
       context.canvas.drawPath(
@@ -37,8 +38,8 @@ abstract class RenderSVGShape extends RenderBoxModel {
 
     if (!stroke.isNone) {
       final strokeWidth = renderStyle.strokeWidth.computedValue;
-      final strokeCap = renderStyle.strokeLinecap.strokeCap;
-      final strokeJoin = renderStyle.strokeLinejoin.strokeJoin;
+      final strokeCap = getStrokeCap(renderStyle.strokeLinecap);
+      final strokeJoin = getStrokeJoin(renderStyle.strokeLinejoin);
       context.canvas.drawPath(
           path.shift(offset),
           Paint()

@@ -283,10 +283,10 @@ class UIEvent extends Event {
     this.detail = 0.0,
     this.view,
     this.which = 0.0,
-    super.bubbles,
-    super.cancelable,
-    super.composed,
-  }) : super(type);
+    bool bubbles = false,
+    bool cancelable = false,
+    bool composed = false,
+  }) : super(type, bubbles: bubbles, cancelable: cancelable, composed: composed);
 
   @override
   Pointer toRaw([int extraLength = 0, bool isCustomEvent = false]) {
@@ -307,13 +307,13 @@ class FocusEvent extends UIEvent {
 
   FocusEvent(String type, {
     this.relatedTarget,
-    super.detail,
-    super.view,
-    super.which,
-    super.bubbles,
-    super.cancelable,
-    super.composed,
-  }): super(type);
+    double detail = 0.0,
+    EventTarget? view,
+    double which = 0.0,
+    bool bubbles = false,
+    bool cancelable = false,
+    bool composed = false,
+  }): super(type, bubbles: bubbles, cancelable: cancelable, composed: composed, detail: detail, view: view, which: which);
 
   @override
   Pointer toRaw([int extraLength = 0, bool isCustomEvent = false]) {
@@ -389,10 +389,10 @@ class GestureEvent extends Event {
     this.velocityX = 0.0,
     this.velocityY = 0.0,
     this.scale = 0.0,
-    super.bubbles,
-    super.cancelable,
-    super.composed,
-  }) : super(type);
+    bool bubbles = false,
+    bool cancelable = false,
+    bool composed = false,
+  }) : super(type, bubbles: bubbles, cancelable: cancelable, composed: composed);
 
   @override
   Pointer toRaw([int extraLength = 0, bool isCustomEvent = false]) {
@@ -425,10 +425,10 @@ class CustomEvent extends Event {
   CustomEvent(
     String type, {
     this.detail = null,
-    super.bubbles,
-    super.cancelable,
-    super.composed,
-  }) : super(type);
+    bool bubbles = false,
+    bool cancelable = false,
+    bool composed = false,
+  }) : super(type, bubbles: bubbles, cancelable: cancelable, composed: composed);
 
   @override
   Pointer toRaw([int extraLength = 0, bool isCustomEvent = false]) {
@@ -470,10 +470,10 @@ class InputEvent extends UIEvent {
   InputEvent({
     this.inputType = '',
     this.data = '',
-    super.bubbles,
-    super.cancelable,
-    super.composed,
-  }) : super(EVENT_INPUT);
+    bool bubbles = false,
+    bool cancelable = false,
+    bool composed = false,
+  }) : super(EVENT_INPUT, bubbles: bubbles, cancelable: cancelable, composed: composed);
 }
 
 class AppearEvent extends Event {

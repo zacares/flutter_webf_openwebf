@@ -15,30 +15,90 @@ enum _CSSPathCommandCategory {
 
 enum _CSSPathCommandType {
   // MoveTo
-  M(_CSSPathCommandCategory.MoveTo), m(_CSSPathCommandCategory.MoveTo),
+  M,
+  m,
   // Close path
-  Z(_CSSPathCommandCategory.Other), z(_CSSPathCommandCategory.Other),
+  Z,
+  z,
   // LineTo
-  L(_CSSPathCommandCategory.LineTo), l(_CSSPathCommandCategory.LineTo),
-  H(_CSSPathCommandCategory.LineTo), h(_CSSPathCommandCategory.LineTo),
-  V(_CSSPathCommandCategory.LineTo), v(_CSSPathCommandCategory.LineTo),
+  L,
+  l,
+  H,
+  h,
+  V,
+  v,
   // Curve
-  C(_CSSPathCommandCategory.CubicBezier), c(_CSSPathCommandCategory.CubicBezier),
-  S(_CSSPathCommandCategory.CubicBezier), s(_CSSPathCommandCategory.CubicBezier),
-  Q(_CSSPathCommandCategory.QuadraticBezier), q(_CSSPathCommandCategory.QuadraticBezier),
-  T(_CSSPathCommandCategory.QuadraticBezier), t(_CSSPathCommandCategory.QuadraticBezier),
+  C,
+  c,
+  S,
+  s,
+  Q,
+  q,
+  T,
+  t,
   // Arc
-  A(_CSSPathCommandCategory.Arc), a(_CSSPathCommandCategory.Arc);
-
-  final _CSSPathCommandCategory _category;
-  _CSSPathCommandCategory get category => _category;
-
-  get isBezierCurve => _category == _CSSPathCommandCategory.CubicBezier || _category == _CSSPathCommandCategory.QuadraticBezier;
-
-  const _CSSPathCommandType(this._category);
+  A,
+  a,
 }
 
-var _CSSPathCommandTypeMap = _CSSPathCommandType.values.asNameMap();
+_CSSPathCommandCategory getCategoryFromType(_CSSPathCommandType type) {
+  switch(type) {
+    case _CSSPathCommandType.M:
+    case _CSSPathCommandType.m:
+      return _CSSPathCommandCategory.MoveTo;
+    case _CSSPathCommandType.Z:
+    case _CSSPathCommandType.z:
+      return _CSSPathCommandCategory.Other;
+    case _CSSPathCommandType.L:
+    case _CSSPathCommandType.l:
+    case _CSSPathCommandType.H:
+    case _CSSPathCommandType.h:
+    case _CSSPathCommandType.V:
+    case _CSSPathCommandType.v:
+      return _CSSPathCommandCategory.LineTo;
+      break;
+    case _CSSPathCommandType.C:
+    case _CSSPathCommandType.c:
+    case _CSSPathCommandType.S:
+    case _CSSPathCommandType.s:
+      return _CSSPathCommandCategory.CubicBezier;
+    case _CSSPathCommandType.Q:
+    case _CSSPathCommandType.q:
+    case _CSSPathCommandType.T:
+    case _CSSPathCommandType.t:
+      return _CSSPathCommandCategory.QuadraticBezier;
+    case _CSSPathCommandType.A:
+    case _CSSPathCommandType.a:
+      return _CSSPathCommandCategory.Arc;
+  }
+}
+
+bool isBezierCurve(_CSSPathCommandCategory category) {
+  return category == _CSSPathCommandCategory.CubicBezier || category == _CSSPathCommandCategory.QuadraticBezier;
+}
+
+var _CSSPathCommandTypeMap = {
+  'M': _CSSPathCommandType.M,
+  'm': _CSSPathCommandType.m,
+  'Z': _CSSPathCommandType.Z,
+  'z': _CSSPathCommandType.z,
+  'L': _CSSPathCommandType.L,
+  'l': _CSSPathCommandType.l,
+  'H': _CSSPathCommandType.H,
+  'h': _CSSPathCommandType.h,
+  'V': _CSSPathCommandType.V,
+  'v': _CSSPathCommandType.v,
+  'C': _CSSPathCommandType.C,
+  'c': _CSSPathCommandType.c,
+  'S': _CSSPathCommandType.S,
+  's': _CSSPathCommandType.s,
+  'Q': _CSSPathCommandType.Q,
+  'q': _CSSPathCommandType.q,
+  'T': _CSSPathCommandType.T,
+  't': _CSSPathCommandType.t,
+  'A': _CSSPathCommandType.A,
+  'a': _CSSPathCommandType.a,
+};
 
 class _CSSPathCommand {
   final _CSSPathCommandType type;
@@ -340,7 +400,7 @@ class CSSPath {
       final params = command.params;
       final type = command.type;
 
-      if (preType != null && preType.category != type.category) {
+      if (preType != null && getCategoryFromType(preType) != getCategoryFromType(type)) {
         // reset control point for bezier curve when category is changed
         cx = null;
         cy = null;
@@ -463,7 +523,7 @@ class CSSPath {
           break;
       }
 
-      if (type.isBezierCurve) {
+      if (isBezierCurve(getCategoryFromType(type))) {
         // reflect control point based on the end point
         assert(cx != null);
         assert(cy != null);

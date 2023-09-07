@@ -468,12 +468,12 @@ mixin ElementInspectorService {
       selection.current = object;
       developer.inspect(selection.current);
       if (selectionChangedCallback != null) {
-        if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+        if (SchedulerBinding.instance?.schedulerPhase == SchedulerPhase.idle) {
           selectionChangedCallback!();
         } else {
           // It isn't safe to trigger the selection change callback if we are in
           // the middle of rendering the frame.
-          SchedulerBinding.instance.scheduleTask(
+          SchedulerBinding.instance?.scheduleTask(
             selectionChangedCallback!,
             Priority.touch,
           );
@@ -632,7 +632,7 @@ mixin ElementInspectorService {
   }
 
   Map<String, Object?>? _getRootRenderObject(String groupName) {
-    return _nodeToJson(RendererBinding.instance.renderView.toDiagnosticsNode(),
+    return _nodeToJson(RendererBinding.instance?.renderView.toDiagnosticsNode(),
         InspectorSerializationDelegate(groupName: groupName, service: this));
   }
 

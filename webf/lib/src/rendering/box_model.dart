@@ -852,10 +852,10 @@ class RenderBoxModel extends RenderBox
   void markNeedsLayout() {
     if (doingThisLayout) {
       // Push delay the [markNeedsLayout] after owner [PipelineOwner] finishing current [flushLayout].
-      SchedulerBinding.instance.addPostFrameCallback((_) {
+      SchedulerBinding.instance?.addPostFrameCallback((_) {
         markNeedsLayout();
       });
-      SchedulerBinding.instance.scheduleFrame();
+      SchedulerBinding.instance?.scheduleFrame();
     } else {
       needsLayout = true;
       super.markNeedsLayout();
@@ -1545,7 +1545,7 @@ class RenderBoxModel extends RenderBox
   Future<Image> toImage({double pixelRatio = 1.0}) {
     if (layer == null) {
       Completer<Image> completer = Completer<Image>();
-      SchedulerBinding.instance.scheduleFrameCallback((_) {
+      SchedulerBinding.instance?.scheduleFrameCallback((_) {
         completer.complete(toImage(pixelRatio: pixelRatio));
       });
       return completer.future;

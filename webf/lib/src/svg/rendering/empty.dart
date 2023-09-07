@@ -4,10 +4,13 @@
 
 import 'package:flutter/rendering.dart';
 import 'container.dart';
+import 'package:webf/css.dart';
+import 'package:webf/svg.dart';
 
 // don't render anything
 class RenderSVGEmpty extends RenderSVGContainer {
-  RenderSVGEmpty({required super.renderStyle, super.element});
+  RenderSVGEmpty({required CSSRenderStyle renderStyle, SVGElement? element})
+      : super(renderStyle: renderStyle, element: element);
 
   @override
   void performLayout() {

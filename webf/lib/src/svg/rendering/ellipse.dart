@@ -3,11 +3,13 @@
  */
 
 import 'dart:ui';
-
+import 'package:webf/css.dart';
+import 'package:webf/svg.dart';
 import 'shape.dart';
 
 class RenderSVGEllipse extends RenderSVGShape {
-  RenderSVGEllipse({required super.renderStyle, super.element});
+  RenderSVGEllipse({required CSSRenderStyle renderStyle, SVGGeometryElement? element})
+      : super(renderStyle: renderStyle, element: element);
 
   @override
   Path asPath() {
@@ -28,8 +30,6 @@ class RenderSVGEllipse extends RenderSVGShape {
     final cx = renderStyle.cx.computedValue;
     final cy = renderStyle.cy.computedValue;
 
-    return Path()
-      ..addOval(Rect.fromCenter(
-          center: Offset(cx, cy), width: rx * 2, height: ry * 2));
+    return Path()..addOval(Rect.fromCenter(center: Offset(cx, cy), width: rx * 2, height: ry * 2));
   }
 }

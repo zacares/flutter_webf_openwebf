@@ -34,17 +34,17 @@ class _InactiveRenderObjects {
       _isScheduled = true;
       /// We needs to wait at least 2 frames to dispose all webf managed renderObjects.
       /// All renderObjects managed by WebF should be disposed after Flutter managed renderObjects dispose.
-      RendererBinding.instance.addPostFrameCallback((timeStamp) {
+      RendererBinding.instance?.addPostFrameCallback((timeStamp) {
         /// The Flutter framework will move all deactivated elements into _InactiveElement list.
         /// They will be disposed in the next frame.
-        RendererBinding.instance.addPostFrameCallback((timeStamp) {
+        RendererBinding.instance?.addPostFrameCallback((timeStamp) {
           /// Now the renderObjects managed by Flutter framework are disposed, it's safe to dispose renderObject by our own.
           finalizeInactiveRenderObjects();
           _isScheduled = false;
         });
-        RendererBinding.instance.scheduleFrame();
+        RendererBinding.instance?.scheduleFrame();
       });
-      RendererBinding.instance.scheduleFrame();
+      RendererBinding.instance?.scheduleFrame();
     }
 
     assert(!renderObject.debugDisposed!);

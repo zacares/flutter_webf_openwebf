@@ -4,7 +4,7 @@
 
 import 'package:flutter/rendering.dart';
 import 'package:webf/svg.dart';
-
+import 'package:webf/css.dart';
 import '../core/aspect_ratio.dart';
 import 'container.dart';
 
@@ -41,22 +41,20 @@ class RenderSVGRoot extends RenderSVGContainer {
   final _transformLayer = LayerHandle<TransformLayer>();
 
   RenderSVGRoot({
-    required super.renderStyle,
-    super.element,
+    required CSSRenderStyle renderStyle,
+    SVGElement? element,
     Rect? viewBox,
     SVGPreserveAspectRatio ratio = const SVGPreserveAspectRatio(),
   })  : _viewBox = viewBox,
-        _ratio = ratio {}
+        _ratio = ratio,
+        super(renderStyle: renderStyle, element: element) {}
 
   @override
   void performPaint(PaintingContext context, Offset offset) {
-    _outerClipLayer.layer = context
-        .pushClipRect(true, offset, Offset.zero & size, (context, offset) {
-      _transformLayer.layer = context
-          .pushTransform(false, offset, _ratio.getMatrix(_renderViewBox, size),
-              (context, offset) {
-        _innerClipLayer.layer = context
-            .pushClipRect(false, offset, _renderViewBox, (context, offset) {
+    _outerClipLayer.layer = context.pushClipRect(true, offset, Offset.zero & size, (context, offset) {
+      _transformLayer.layer =
+          context.pushTransform(false, offset, _ratio.getMatrix(_renderViewBox, size), (context, offset) {
+        _innerClipLayer.layer = context.pushClipRect(false, offset, _renderViewBox, (context, offset) {
           // Draw debug rect
           // context.canvas.drawRect(_viewBox, Paint()..color = Color.fromARGB(255, 255, 0, 0)..style = PaintingStyle.stroke);
           visitChildren((child) {
@@ -71,12 +69,8 @@ class RenderSVGRoot extends RenderSVGContainer {
 
   @override
   void performLayout() {
-    var width = renderStyle.width.isAuto
-        ? DEFAULT_VIEW_BOX_WIDTH
-        : renderStyle.width.computedValue;
-    var height = renderStyle.height.isAuto
-        ? DEFAULT_VIEW_BOX_HEIGHT
-        : renderStyle.height.computedValue;
+    var width = renderStyle.width.isAuto ? DEFAULT_VIEW_BOX_WIDTH : renderStyle.width.computedValue;
+    var height = renderStyle.height.isAuto ? DEFAULT_VIEW_BOX_HEIGHT : renderStyle.height.computedValue;
 
     width = width.isInfinite ? DEFAULT_VIEW_BOX_WIDTH : width;
     height = height.isInfinite ? DEFAULT_VIEW_BOX_HEIGHT : height;
@@ -97,8 +91,7 @@ class RenderSVGRoot extends RenderSVGContainer {
     });
     // HACK: must be call this function otherwise the BoxModel cannot works correctly.
     // Improve it in the future.
-    initOverflowLayout(Rect.fromLTWH(0, 0, size.width, size.height),
-        Rect.fromLTWH(0, 0, size.width, size.height));
+    initOverflowLayout(Rect.fromLTWH(0, 0, size.width, size.height), Rect.fromLTWH(0, 0, size.width, size.height));
     dispatchResize(contentSize, boxSize ?? Size.zero);
   }
 

@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
- * Copyright (C) 2022-present The WebF authors. All rights reserved.
+ * Copyright (C) 2021-present The Kraken authors. All rights reserved.
  */
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -229,7 +228,7 @@ abstract class ScrollPosition extends ViewportOffset with ScrollMetrics {
   /// If there is any overscroll, it is reported using [didOverscrollBy].
   double setPixels(double newPixels) {
     assert(_pixels != null);
-    assert(SchedulerBinding.instance.schedulerPhase.index <= SchedulerPhase.transientCallbacks.index);
+    assert(SchedulerBinding.instance!.schedulerPhase.index <= SchedulerPhase.transientCallbacks.index);
 
     if (newPixels != pixels) {
       final double overscroll = applyBoundaryConditions(newPixels);
@@ -313,8 +312,8 @@ abstract class ScrollPosition extends ViewportOffset with ScrollMetrics {
   @override
   void correctBy(double correction) {
     assert(
-      _pixels != null,
-      'An initial pixels value must exist by caling correctPixels on the ScrollPosition',
+    _pixels != null,
+    'An initial pixels value must exist by caling correctPixels on the ScrollPosition',
     );
     _pixels = _pixels! + correction;
     _didChangeViewportDimensionOrReceiveCorrection = true;
@@ -480,12 +479,12 @@ abstract class ScrollPosition extends ViewportOffset with ScrollMetrics {
   /// * [ScrollPositionAlignmentPolicy] for the way in which `alignment` is
   ///   applied, and the way the given `object` is aligned.
   Future<void> ensureVisible(
-    RenderObject object, {
-    double alignment = 0.0,
-    Duration duration = Duration.zero,
-    Curve curve = Curves.ease,
-    ScrollPositionAlignmentPolicy alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
-  }) {
+      RenderObject object, {
+        double alignment = 0.0,
+        Duration duration = Duration.zero,
+        Curve curve = Curves.ease,
+        ScrollPositionAlignmentPolicy alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
+      }) {
     assert(object.attached);
     final RenderAbstractViewport viewport = RenderAbstractViewport.of(object)!;
 
@@ -554,10 +553,10 @@ abstract class ScrollPosition extends ViewportOffset with ScrollMetrics {
   /// The animation is typically handled by an [DrivenScrollActivity].
   @override
   Future<void> animateTo(
-    double? to, {
-    required Duration duration,
-    required Curve curve,
-  });
+      double? to, {
+        required Duration duration,
+        required Curve curve,
+      });
 
   /// Jumps the scroll position from its current value to the given value,
   /// without animation, and without checking if the new value is in range.
@@ -595,11 +594,11 @@ abstract class ScrollPosition extends ViewportOffset with ScrollMetrics {
   /// If [animateTo] is called then [curve] defaults to [Curves.ease].
   @override
   Future<void> moveTo(
-    double to, {
-    Duration? duration,
-    Curve? curve,
-    bool? clamp = true,
-  }) {
+      double to, {
+        Duration? duration,
+        Curve? curve,
+        bool? clamp = true,
+      }) {
     assert(clamp != null);
 
     if (clamp!) to = to.clamp(minScrollExtent, maxScrollExtent);

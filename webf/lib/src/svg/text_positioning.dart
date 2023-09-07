@@ -3,9 +3,10 @@
  */
 
 import 'package:webf/svg.dart';
+import 'package:webf/foundation.dart';
 
 class SVGTextPositioningElement extends SVGTextContentElement {
-  SVGTextPositioningElement(super.context);
+  SVGTextPositioningElement([BindingContext? context]): super(context);
 
   @override
   get presentationAttributeConfigs => super.presentationAttributeConfigs

@@ -3,11 +3,13 @@
  */
 
 import 'dart:ui';
-
+import 'package:webf/css.dart';
+import 'package:webf/svg.dart';
 import 'shape.dart';
 
 class RenderSVGRect extends RenderSVGShape {
-  RenderSVGRect({required super.renderStyle, super.element});
+  RenderSVGRect({required CSSRenderStyle renderStyle, SVGGeometryElement? element})
+      : super(renderStyle: renderStyle, element: element);
 
   @override
   Path asPath() {
@@ -26,8 +28,7 @@ class RenderSVGRect extends RenderSVGShape {
       return path;
     }
 
-    final rrect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, y, width, height), Radius.elliptical(rx, ry));
+    final rrect = RRect.fromRectAndRadius(Rect.fromLTWH(x, y, width, height), Radius.elliptical(rx, ry));
 
     path.addRRect(rrect);
 

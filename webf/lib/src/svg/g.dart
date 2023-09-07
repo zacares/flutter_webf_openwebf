@@ -3,7 +3,7 @@
  */
 
 import 'package:webf/svg.dart';
-
+import 'package:webf/foundation.dart';
 import 'rendering/container.dart';
 
 class SVGGElement extends SVGGraphicsElement {
@@ -12,7 +12,7 @@ class SVGGElement extends SVGGraphicsElement {
   @override
   get renderBoxModel => _renderer;
 
-  SVGGElement(super.context) {
+  SVGGElement([BindingContext? context]): super(context) {
     _renderer = RenderSVGContainer(renderStyle: renderStyle, element: this);
   }
 }

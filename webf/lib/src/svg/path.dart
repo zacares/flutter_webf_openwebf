@@ -3,7 +3,7 @@
  */
 
 import 'package:webf/svg.dart';
-
+import 'package:webf/foundation.dart';
 import 'rendering/path.dart';
 
 class SVGPathElement extends SVGGeometryElement {
@@ -16,7 +16,7 @@ class SVGPathElement extends SVGGeometryElement {
   get presentationAttributeConfigs => super.presentationAttributeConfigs
     ..addAll([SVGPresentationAttributeConfig('d')]);
 
-  SVGPathElement(super.context) {
+  SVGPathElement([BindingContext? context]): super(context) {
     _renderer = RenderSVGPath(renderStyle: renderStyle, element: this);
   }
 }

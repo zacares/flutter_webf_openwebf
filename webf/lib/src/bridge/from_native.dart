@@ -325,8 +325,8 @@ void _toBlob(Pointer<Void> callbackContext, int contextId, Pointer<NativeFunctio
     Pointer<Void> elementPtr, double devicePixelRatio) {
   DartAsyncBlobCallback func = callback.asFunction();
   WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
-  controller.view.toImage(devicePixelRatio, elementPtr).then((Uint8List bytes) {
-    Pointer<Uint8> bytePtr = malloc.allocate<Uint8>(sizeOf<Uint8>() * bytes.length);
+  controller.view.toImage(devicePixelRatio, elementPtr).then((bytes) {
+    Pointer<Uint8> bytePtr = malloc.allocate<Uint8>((sizeOf<Uint8>() * bytes.length).toInt());
     Uint8List byteList = bytePtr.asTypedList(bytes.length);
     byteList.setAll(0, bytes);
     func(callbackContext, contextId, nullptr, bytePtr, bytes.length);

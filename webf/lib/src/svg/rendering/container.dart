@@ -5,6 +5,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:webf/rendering.dart';
 import 'package:webf/svg.dart';
+import 'package:webf/css.dart';
 
 // SVG container to accept children
 class RenderSVGContainer extends RenderBoxModel
@@ -13,7 +14,7 @@ class RenderSVGContainer extends RenderBoxModel
             ContainerBoxParentData<RenderBox>> {
   final SVGElement? element;
 
-  RenderSVGContainer({required super.renderStyle, this.element});
+  RenderSVGContainer({required CSSRenderStyle renderStyle, this.element}): super(renderStyle: renderStyle);
 
   @override
   double? computeDistanceToActualBaseline(TextBaseline baseline) {

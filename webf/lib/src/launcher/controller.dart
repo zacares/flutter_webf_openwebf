@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
@@ -181,13 +182,13 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
       flushUICommand(this);
     });
 
-    SchedulerBinding.instance.addPostFrameCallback(_postFrameCallback);
+    SchedulerBinding.instance?.addPostFrameCallback(_postFrameCallback);
   }
 
   void _postFrameCallback(Duration timeStamp) {
     if (disposed) return;
     flushUICommand(this);
-    SchedulerBinding.instance.addPostFrameCallback(_postFrameCallback);
+    SchedulerBinding.instance?.addPostFrameCallback(_postFrameCallback);
   }
 
   // Index value which identify javascript runtime context.
@@ -269,7 +270,7 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
     if (ElementsBinding.instance != null) {
       ElementsBinding.instance!.addObserver(this);
     } else {
-      WidgetsBinding.instance.addObserver(this);
+      WidgetsBinding.instance?.addObserver(this);
     }
   }
 
@@ -277,7 +278,7 @@ class WebFViewController implements WidgetsBindingObserver, ElementsBindingObser
     if (ElementsBinding.instance != null) {
       ElementsBinding.instance!.removeObserver(this);
     } else {
-      WidgetsBinding.instance.removeObserver(this);
+      WidgetsBinding.instance?.removeObserver(this);
     }
   }
 
@@ -1114,12 +1115,12 @@ class WebFController {
       _view.document.parsing = false;
 
       // Should check completed when parse end.
-      SchedulerBinding.instance.addPostFrameCallback((_) {
+      SchedulerBinding.instance?.addPostFrameCallback((_) {
         // UICommand list is read in the next frame, so we need to determine whether there are labels
         // such as images and scripts after it to check is completed.
         checkCompleted();
       });
-      SchedulerBinding.instance.scheduleFrame();
+      SchedulerBinding.instance?.scheduleFrame();
     }
   }
 
@@ -1166,7 +1167,7 @@ class WebFController {
   }
 
   void _dispatchWindowLoadEvent() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
       // DOM element are created at next frame, so we should trigger onload callback in the next frame.
       Event event = Event(EVENT_LOAD);
       _view.window.dispatchEvent(event);
@@ -1175,6 +1176,6 @@ class WebFController {
         onLoad!(this);
       }
     });
-    SchedulerBinding.instance.scheduleFrame();
+    SchedulerBinding.instance?.scheduleFrame();
   }
 }

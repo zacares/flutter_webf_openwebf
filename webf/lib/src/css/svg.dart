@@ -5,37 +5,29 @@
 import 'dart:ui';
 
 import 'package:webf/css.dart';
+import 'package:webf/svg.dart';
 
-import '../svg/rendering/shape.dart';
+enum CSSFillRule { nonzero, evenodd }
 
-enum CSSFillRule {
-  nonzero,
-  evenodd;
-
-  get fillType {
-    switch (this) {
-      case CSSFillRule.nonzero:
-        return PathFillType.nonZero;
-      case CSSFillRule.evenodd:
-        return PathFillType.evenOdd;
-    }
+PathFillType getFillType(CSSFillRule rule) {
+  switch (rule) {
+    case CSSFillRule.nonzero:
+      return PathFillType.nonZero;
+    case CSSFillRule.evenodd:
+      return PathFillType.evenOdd;
   }
 }
 
-enum CSSStrokeLinecap {
-  butt,
-  round,
-  square;
+enum CSSStrokeLinecap { butt, round, square }
 
-  StrokeCap get strokeCap {
-    switch (this) {
-      case CSSStrokeLinecap.butt:
-        return StrokeCap.butt;
-      case CSSStrokeLinecap.round:
-        return StrokeCap.round;
-      case CSSStrokeLinecap.square:
-        return StrokeCap.square;
-    }
+StrokeCap getStrokeCap(CSSStrokeLinecap linecap) {
+  switch (linecap) {
+    case CSSStrokeLinecap.butt:
+      return StrokeCap.butt;
+    case CSSStrokeLinecap.round:
+      return StrokeCap.round;
+    case CSSStrokeLinecap.square:
+      return StrokeCap.square;
   }
 }
 
@@ -44,17 +36,17 @@ enum CSSStrokeLinejoin {
   miter,
   // miterClip,
   round,
-  bevel;
+  bevel
+}
 
-  get strokeJoin {
-    switch (this) {
-      case CSSStrokeLinejoin.miter:
-        return StrokeJoin.miter;
-      case CSSStrokeLinejoin.round:
-        return StrokeJoin.round;
-      case CSSStrokeLinejoin.bevel:
-        return StrokeJoin.bevel;
-    }
+StrokeJoin getStrokeJoin(CSSStrokeLinejoin join) {
+  switch (join) {
+    case CSSStrokeLinejoin.miter:
+      return StrokeJoin.miter;
+    case CSSStrokeLinejoin.round:
+      return StrokeJoin.round;
+    case CSSStrokeLinejoin.bevel:
+      return StrokeJoin.bevel;
   }
 }
 
@@ -76,8 +68,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSPaint? _fill;
+
   @override
   CSSPaint get fill => _fill ?? parent?.fill ?? CSSPaint.blackPaint;
+
   set fill(CSSPaint? value) {
     if (_fill == value) return;
     _fill = value;
@@ -85,8 +79,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSPaint? _stroke;
+
   @override
   CSSPaint get stroke => _stroke ?? parent?.stroke ?? CSSPaint.none;
+
   set stroke(CSSPaint? value) {
     if (_stroke == value) return;
     _stroke = value;
@@ -94,8 +90,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _strokeWidth;
+
   @override
   CSSLengthValue get strokeWidth => _strokeWidth ?? parent?.strokeWidth ?? CSSLengthValue(1, CSSLengthType.PX);
+
   set strokeWidth(CSSLengthValue? value) {
     if (_strokeWidth == value) return;
     _strokeWidth = value;
@@ -103,8 +101,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _x;
+
   @override
   get x => _x ?? CSSLengthValue.zero;
+
   set x(CSSLengthValue? value) {
     if (_x == value) return;
     _x = value;
@@ -112,8 +112,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _y;
+
   @override
   get y => _y ?? CSSLengthValue.zero;
+
   set y(CSSLengthValue? value) {
     if (_y == value) return;
     _y = value;
@@ -121,8 +123,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _rx;
+
   @override
   get rx => _rx ?? CSSLengthValue.zero;
+
   set rx(CSSLengthValue? value) {
     if (_rx == value) return;
     _rx = value;
@@ -130,8 +134,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _ry;
+
   @override
   get ry => _ry ?? CSSLengthValue.zero;
+
   set ry(CSSLengthValue? value) {
     if (_ry == value) return;
     _ry = value;
@@ -139,7 +145,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _cx;
-  @override get cx => _cx ?? CSSLengthValue.zero;
+
+  @override
+  get cx => _cx ?? CSSLengthValue.zero;
+
   set cx(CSSLengthValue? value) {
     if (_cx == value) return;
     _cx = value;
@@ -147,7 +156,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _cy;
-  @override get cy => _cy ?? CSSLengthValue.zero;
+
+  @override
+  get cy => _cy ?? CSSLengthValue.zero;
+
   set cy(CSSLengthValue? value) {
     if (_cy == value) return;
     _cy = value;
@@ -155,7 +167,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSLengthValue? _r;
-  @override get r => _r ?? CSSLengthValue.zero;
+
+  @override
+  get r => _r ?? CSSLengthValue.zero;
+
   set r(CSSLengthValue? value) {
     if (_r == value) return;
     _r = value;
@@ -163,7 +178,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSPath? _d;
-  @override get d => _d ?? CSSPath.None;
+
+  @override
+  get d => _d ?? CSSPath.None;
+
   set d(CSSPath value) {
     if (_d == value) return;
     _d = value;
@@ -171,7 +189,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSFillRule? _fillRule;
-  @override get fillRule => _fillRule ?? CSSFillRule.nonzero;
+
+  @override
+  get fillRule => _fillRule ?? CSSFillRule.nonzero;
+
   set fillRule(CSSFillRule value) {
     if (_fillRule == value) return;
     _fillRule = value;
@@ -183,7 +204,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSStrokeLinecap? _strokeLinecap;
-  @override get strokeLinecap => _strokeLinecap ?? CSSStrokeLinecap.butt;
+
+  @override
+  CSSStrokeLinecap get strokeLinecap => _strokeLinecap ?? CSSStrokeLinecap.butt;
+
   set strokeLinecap(CSSStrokeLinecap value) {
     if (_strokeLinecap == value) return;
     _strokeLinecap = value;
@@ -195,7 +219,10 @@ mixin CSSSvgMixin on RenderStyle {
   }
 
   CSSStrokeLinejoin? _strokeLinejoin;
-  @override get strokeLinejoin => _strokeLinejoin ?? CSSStrokeLinejoin.miter;
+
+  @override
+  get strokeLinejoin => _strokeLinejoin ?? CSSStrokeLinejoin.miter;
+
   set strokeLinejoin(CSSStrokeLinejoin value) {
     if (_strokeLinejoin == value) return;
     _strokeLinejoin = value;

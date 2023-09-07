@@ -3,7 +3,8 @@
  */
 
 import 'package:webf/svg.dart';
+import 'package:webf/foundation.dart';
 
 class SVGGeometryElement extends SVGGraphicsElement {
-  SVGGeometryElement(super.context);
+  SVGGeometryElement([BindingContext? context]): super(context);
 }

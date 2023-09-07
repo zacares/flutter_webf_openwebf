@@ -27,7 +27,7 @@ class WebFWidgetElementStatefulWidget extends StatefulWidget {
 }
 
 class WebFWidgetElementElement extends StatefulElement {
-  WebFWidgetElementElement(super.widget);
+  WebFWidgetElementElement(StatefulWidget widget): super(widget);
 
   @override
   WebFWidgetElementStatefulWidget get widget => super.widget as WebFWidgetElementStatefulWidget;

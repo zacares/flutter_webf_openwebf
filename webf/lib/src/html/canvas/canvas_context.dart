@@ -212,7 +212,7 @@ class CanvasLinearGradient extends CanvasGradient {
   double x1;
   double y1;
 
-  CanvasLinearGradient(super.ownerCanvasElement, this.x0, this.y0, this.x1, this.y1);
+  CanvasLinearGradient(CanvasElement ownerCanvasElement, this.x0, this.y0, this.x1, this.y1): super(ownerCanvasElement);
 }
 
 class CanvasRadialGradient extends CanvasGradient {
@@ -223,5 +223,5 @@ class CanvasRadialGradient extends CanvasGradient {
   double y1;
   double r1;
 
-  CanvasRadialGradient(super.ownerCanvasElement, this.x0, this.y0, this.r0, this.x1, this.y1, this.r1);
+  CanvasRadialGradient(CanvasElement ownerCanvasElement, this.x0, this.y0, this.r0, this.x1, this.y1, this.r1): super(ownerCanvasElement);
 }

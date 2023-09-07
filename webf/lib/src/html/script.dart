@@ -149,7 +149,7 @@ class ScriptRunner {
     // Script executing phrase.
     if (shouldAsync) {
       // @TODO: Use requestIdleCallback
-      SchedulerBinding.instance.scheduleFrameCallback((_) async {
+      SchedulerBinding.instance?.scheduleFrameCallback((_) async {
         await task(shouldAsync);
       });
     } else {
@@ -273,7 +273,7 @@ class ScriptElement extends Element {
       // Add bundle to scripts queue.
       ownerDocument.scriptRunner._queueScriptForExecution(this);
 
-      SchedulerBinding.instance.scheduleFrame();
+      SchedulerBinding.instance?.scheduleFrame();
     } else if (childNodes.isNotEmpty) {
       ownerDocument.scriptRunner._queueScriptForExecution(this, isInline: true);
     }

@@ -13,6 +13,7 @@ export 'src/css/flexbox.dart';
 export 'src/css/filter.dart';
 export 'src/css/opacity.dart';
 export 'src/css/overflow.dart';
+export 'src/css/svg.dart';
 export 'src/css/positioned.dart';
 export 'src/css/inline.dart';
 export 'src/css/sizing.dart';

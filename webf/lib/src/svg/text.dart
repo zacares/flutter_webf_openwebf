@@ -3,6 +3,7 @@
  */
 
 import 'package:webf/svg.dart';
+import 'package:webf/foundation.dart';
 
 import 'rendering/text.dart';
 
@@ -16,7 +17,7 @@ class SVGTextElement extends SVGTextPositioningElement {
   get presentationAttributeConfigs => super.presentationAttributeConfigs..addAll([
   ]);
 
-  SVGTextElement(super.context) {
+  SVGTextElement([BindingContext? context]): super(context) {
     _renderer = RenderSVGText(renderStyle: renderStyle, element: this);
   }
 }

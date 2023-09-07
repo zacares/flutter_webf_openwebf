@@ -3,11 +3,14 @@
  */
 
 import 'dart:ui';
+import 'package:webf/css.dart';
+import 'package:webf/svg.dart';
 
 import 'shape.dart';
 
 class RenderSVGCircle extends RenderSVGShape {
-  RenderSVGCircle({required super.renderStyle, super.element});
+  RenderSVGCircle({required CSSRenderStyle renderStyle, SVGGeometryElement? element})
+      : super(renderStyle: renderStyle, element: element);
 
   @override
   Path asPath() {

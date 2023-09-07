@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
- * Copyright (C) 2022-present The WebF authors. All rights reserved.
+ * Copyright (C) 2021-present The Kraken authors. All rights reserved.
  */
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -12,7 +11,9 @@ import 'dart:math' as math;
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'scroll_position_with_single_context.dart';
 
@@ -207,7 +208,7 @@ class ScrollDragController implements Drag {
     this.carriedVelocity,
     this.motionStartDistanceThreshold,
   })  : assert(motionStartDistanceThreshold == null || motionStartDistanceThreshold > 0.0,
-            'motionStartDistanceThreshold must be a positive number or null'),
+  'motionStartDistanceThreshold must be a positive number or null'),
         _delegate = delegate,
         _lastDetails = details,
         _retainMomentum = carriedVelocity != null && carriedVelocity != 0.0,
@@ -310,11 +311,11 @@ class ScrollDragController implements Drag {
           } else {
             // This is a normal speed threshold break.
             return math.min(
-                  // Ease into the motion when the threshold is initially broken
-                  // to avoid a visible jump.
-                  motionStartDistanceThreshold! / 3.0,
-                  offset.abs(),
-                ) *
+              // Ease into the motion when the threshold is initially broken
+              // to avoid a visible jump.
+              motionStartDistanceThreshold! / 3.0,
+              offset.abs(),
+            ) *
                 offset.sign;
           }
         } else {
@@ -399,9 +400,9 @@ class DragScrollActivity extends ScrollActivity {
   /// Creates an activity for when the user drags their finger across the
   /// screen.
   DragScrollActivity(
-    ScrollActivityDelegate delegate,
-    ScrollDragController controller,
-  )   : _controller = controller,
+      ScrollActivityDelegate delegate,
+      ScrollDragController controller,
+      )   : _controller = controller,
         super(delegate);
 
   ScrollDragController? _controller;
@@ -447,10 +448,10 @@ class BallisticScrollActivity extends ScrollActivity {
   ///
   /// The [delegate], [simulation], and [vsync] arguments must not be null.
   BallisticScrollActivity(
-    ScrollActivityDelegate delegate,
-    Simulation simulation,
-    TickerProvider vsync,
-  ) : super(delegate) {
+      ScrollActivityDelegate delegate,
+      Simulation simulation,
+      TickerProvider vsync,
+      ) : super(delegate) {
     _controller = AnimationController.unbounded(
       debugLabel: kDebugMode ? '$runtimeType' : null,
       vsync: vsync,
@@ -527,13 +528,13 @@ class DrivenScrollActivity extends ScrollActivity {
   ///
   /// All of the parameters must be non-null.
   DrivenScrollActivity(
-    ScrollActivityDelegate delegate, {
-    required double from,
-    required double to,
-    required Duration duration,
-    required Curve curve,
-    required TickerProvider vsync,
-  })  : assert(duration > Duration.zero),
+      ScrollActivityDelegate delegate, {
+        required double from,
+        required double to,
+        required Duration duration,
+        required Curve curve,
+        required TickerProvider vsync,
+      })  : assert(duration > Duration.zero),
         super(delegate) {
     _completer = Completer<void>();
     _controller = AnimationController.unbounded(

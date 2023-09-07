@@ -33,14 +33,14 @@ class HTMLElementState extends State<WebFHTMLElementStatefulWidget> {
   dom.Node get webFElement => _webFElement;
 
   void addWidgetChild(Widget widget) {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
       setState(() {
         customElementWidgets.add(widget);
       });
     });
   }
   void removeWidgetChild(Widget widget) {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
       if (_disposed) return;
       setState(() {
         customElementWidgets.remove(widget);

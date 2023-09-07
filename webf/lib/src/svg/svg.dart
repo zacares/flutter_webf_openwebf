@@ -49,7 +49,7 @@ class SVGSVGElement extends SVGGraphicsElement {
       SVGPresentationAttributeConfig('height', property: true),
     ]);
 
-  SVGSVGElement(super.context) {
+  SVGSVGElement([BindingContext? context]): super(context) {
     _renderer = RenderSVGRoot(renderStyle: renderStyle, element: this);
   }
 

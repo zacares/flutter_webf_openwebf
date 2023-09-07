@@ -4,6 +4,7 @@
  */
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -202,7 +203,7 @@ class WebFResizeImage extends ResizeImage {
     // the image we want before getting to this method. We should avoid calling
     // load again, but still update the image cache with LRU information.
     if (stream.completer != null) {
-      final ImageStreamCompleter? completer = PaintingBinding.instance.imageCache.putIfAbsent(
+      final ImageStreamCompleter? completer = PaintingBinding.instance?.imageCache?.putIfAbsent(
         key,
         () => stream.completer!,
         onError: handleError,
@@ -210,7 +211,7 @@ class WebFResizeImage extends ResizeImage {
       assert(identical(completer, stream.completer));
       return;
     }
-    final ImageStreamCompleter? completer = PaintingBinding.instance.imageCache.putIfAbsent(
+    final ImageStreamCompleter? completer = PaintingBinding.instance?.imageCache?.putIfAbsent(
       key,
       () => load(key, instantiateImageCodec),
       onError: handleError,

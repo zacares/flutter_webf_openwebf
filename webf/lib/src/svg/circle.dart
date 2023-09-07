@@ -3,7 +3,7 @@
  */
 
 import 'package:webf/svg.dart';
-
+import 'package:webf/foundation.dart';
 import 'rendering/circle.dart';
 
 class SVGCircleElement extends SVGGeometryElement {
@@ -20,7 +20,7 @@ class SVGCircleElement extends SVGGeometryElement {
       SVGPresentationAttributeConfig('r'),
     ]);
 
-  SVGCircleElement(super.context) {
+  SVGCircleElement([BindingContext? context]): super(context) {
     _renderer = RenderSVGCircle(renderStyle: renderStyle, element: this);
   }
 }

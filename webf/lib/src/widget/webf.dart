@@ -260,7 +260,7 @@ class WebFState extends State<WebF> with RouteAware {
 }
 
 class WebFContext extends InheritedWidget {
-  WebFContext({required super.child});
+  WebFContext({required Widget child}): super(child: child);
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) {
@@ -274,7 +274,7 @@ class WebFContext extends InheritedWidget {
 }
 
 class WebFContextInheritElement extends InheritedElement {
-  WebFContextInheritElement(super.widget);
+  WebFContextInheritElement(InheritedWidget widget): super(widget);
 
   WebFController? controller;
 }

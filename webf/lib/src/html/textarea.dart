@@ -7,6 +7,7 @@ import 'package:webf/widget.dart';
 import 'package:webf/html.dart';
 import 'package:webf/dom.dart';
 import 'package:webf/css.dart';
+import 'package:webf/foundation.dart';
 
 const TEXTAREA = 'TEXTAREA';
 
@@ -17,7 +18,7 @@ const Map<String, dynamic> _textAreaDefaultStyle = {
 };
 
 class FlutterTextAreaElement extends WidgetElement with BaseInputElement {
-  FlutterTextAreaElement(super.context);
+  FlutterTextAreaElement(BindingContext? context): super(context);
 
   @override
   Map<String, dynamic> get defaultStyle => _textAreaDefaultStyle;

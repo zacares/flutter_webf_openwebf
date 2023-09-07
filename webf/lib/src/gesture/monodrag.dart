@@ -1,14 +1,13 @@
 /*
- * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
- * Copyright (C) 2022-present The WebF authors. All rights reserved.
+ * Copyright (C) 2019-present The Kraken authors. All rights reserved.
  */
 
 // Modified from Flutter gesture/monodrag.dart.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:webf/dom.dart';
+import 'package:flutter/rendering.dart';
 
 typedef IsAcceptedDragCallback = bool Function(AxisDirection direction);
 
@@ -51,7 +50,6 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
   }) : super(debugOwner: debugOwner, supportedDevices: supportedDevices);
 
   static VelocityTracker _defaultBuilder(PointerEvent event) => VelocityTracker.withKind(event.kind);
-
   /// Configure the behavior of offsets sent to [onStart].
   ///
   /// If set to [DragStartBehavior.start], the [onStart] callback will be called
@@ -215,7 +213,12 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
     if (_initialButtons == null) {
       switch (event.buttons) {
         case kPrimaryButton:
-          if (onDown == null && onStart == null && onUpdate == null && onEnd == null && onCancel == null) return false;
+          if (onDown == null &&
+              onStart == null &&
+              onUpdate == null &&
+              onEnd == null &&
+              onCancel == null)
+            return false;
           break;
         default:
           return false;
@@ -229,11 +232,14 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
     return super.isPointerAllowed(event as PointerDownEvent);
   }
 
-  void _addPointer(PointerEvent event) {
+  @override
+  void addAllowedPointer(PointerEvent event) {
+    startTrackingPointer(event.pointer, event.transform);
     _velocityTrackers[event.pointer] = velocityTrackerBuilder(event);
     if (_state == _DragState.ready) {
       _state = _DragState.possible;
       _initialPosition = OffsetPair(global: event.position, local: event.localPosition);
+      _initialButtons = event.buttons;
       _pendingDragOffset = OffsetPair.zero;
       _globalDistanceMoved = 0.0;
       _lastPendingEventTimestamp = event.timeStamp;
@@ -245,82 +251,49 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
   }
 
   @override
-  void addAllowedPointer(PointerDownEvent event) {
-    super.addAllowedPointer(event);
-    if (_state == _DragState.ready) {
-      _initialButtons = event.buttons;
-    }
-    _addPointer(event);
-  }
-
-  @override
-  void addAllowedPointerPanZoom(PointerPanZoomStartEvent event) {
-    super.addAllowedPointerPanZoom(event);
-    startTrackingPointer(event.pointer, event.transform);
-    if (_state == _DragState.ready) {
-      _initialButtons = kPrimaryButton;
-    }
-    _addPointer(event);
-  }
-
-  @override
   void handleEvent(PointerEvent event) {
     assert(_state != _DragState.ready);
-    if (!event.synthesized &&
-        (event is PointerDownEvent ||
-            event is PointerMoveEvent ||
-            event is PointerPanZoomStartEvent ||
-            event is PointerPanZoomUpdateEvent)) {
+    if (!event.synthesized
+        && (event is PointerDownEvent || event is PointerMoveEvent)) {
       final VelocityTracker tracker = _velocityTrackers[event.pointer]!;
-      if (event is PointerPanZoomStartEvent) {
-        tracker.addPosition(event.timeStamp, Offset.zero);
-      } else if (event is PointerPanZoomUpdateEvent) {
-        tracker.addPosition(event.timeStamp, event.pan);
-      } else {
-        tracker.addPosition(event.timeStamp, event.localPosition);
-      }
+      tracker.addPosition(event.timeStamp, event.localPosition);
     }
-    if (event is PointerDownEvent || event is PointerPanZoomStartEvent) {
+    if (event is PointerDownEvent) {
       final Duration? timestamp = _lastPendingEventTimestamp;
-      _checkStart(timestamp!, event.pointer);
+      _checkStart(timestamp);
     }
-    if (event is PointerMoveEvent && event.buttons != _initialButtons) {
-      _giveUpPointer(event.pointer);
-      return;
-    }
-    if (event is PointerMoveEvent || event is PointerPanZoomUpdateEvent) {
-      final Offset delta = (event is PointerMoveEvent) ? event.delta : (event as PointerPanZoomUpdateEvent).panDelta;
-      final Offset localDelta = (event is PointerMoveEvent) ? event.localDelta : (event as PointerPanZoomUpdateEvent).localPanDelta;
-      final Offset position = (event is PointerMoveEvent) ? event.position : (event.position + (event as PointerPanZoomUpdateEvent).pan);
-      final Offset localPosition = (event is PointerMoveEvent) ? event.localPosition : (event.localPosition + (event as PointerPanZoomUpdateEvent).localPan);
-
+    if (event is PointerMoveEvent) {
+      if (event.buttons != _initialButtons) {
+        _giveUpPointer(event.pointer);
+        return;
+      }
       if (_state == _DragState.accepted) {
         _checkUpdate(
           sourceTimeStamp: event.timeStamp,
-          delta: _getDeltaForDetails(localDelta),
-          primaryDelta: _getPrimaryValueFromOffset(localDelta),
-          globalPosition: position,
-          localPosition: localPosition,
+          delta: _getDeltaForDetails(event.localDelta),
+          primaryDelta: _getPrimaryValueFromOffset(event.localDelta),
+          globalPosition: event.position,
+          localPosition: event.localPosition,
         );
       } else {
-        _pendingDragOffset = _pendingDragOffset! + OffsetPair(local: localDelta, global: delta);
+        _pendingDragOffset = _pendingDragOffset! + OffsetPair(local: event.localDelta, global: event.delta);
         _lastPendingEventTimestamp = event.timeStamp;
         _lastTransform = event.transform;
-        final Offset movedLocally = _getDeltaForDetails(localDelta);
+        final Offset movedLocally = _getDeltaForDetails(event.localDelta);
         final Matrix4? localToGlobalTransform = event.transform == null ? null : Matrix4.tryInvert(event.transform!);
         _globalDistanceMoved += PointerEvent.transformDeltaViaPositions(
-            transform: localToGlobalTransform,
-            untransformedDelta: movedLocally,
-            untransformedEndPosition: localPosition
+          transform: localToGlobalTransform,
+          untransformedDelta: movedLocally,
+          untransformedEndPosition: event.localPosition,
         ).distance * (_getPrimaryValueFromOffset(movedLocally)).sign;
         if (_hasSufficientGlobalDistanceToAccept(event.kind) && _acceptDragGesture(event))
           resolve(GestureDisposition.accepted);
       }
     }
-    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPanZoomEndEvent) {
+    if (event is PointerUpEvent || event is PointerCancelEvent) {
       _giveUpPointer(
         event.pointer,
-        reject: event is PointerCancelEvent || _state == _DragState.possible,
+        reject: event is PointerCancelEvent || _state ==_DragState.possible,
       );
     }
   }
@@ -330,9 +303,9 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
     if (_state != _DragState.accepted) {
       _state = _DragState.accepted;
       final OffsetPair? delta = _pendingDragOffset;
-      final Duration timestamp = _lastPendingEventTimestamp!;
+      final Duration? timestamp = _lastPendingEventTimestamp;
       final Matrix4? transform = _lastTransform;
-      final Offset localUpdateDelta;
+      Offset? localUpdateDelta;
       switch (dragStartBehavior) {
         case DragStartBehavior.start:
           _initialPosition = _initialPosition + delta!;
@@ -363,10 +336,6 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
           localPosition: correctedPosition.local,
         );
       }
-      // This acceptGesture might have been called only for one pointer, instead
-      // of all pointers. Resolve all pointers to `accepted`. This won't cause
-      // infinite recursion because an accepted pointer won't be accepted again.
-      resolve(GestureDisposition.accepted);
     }
   }
 
@@ -408,26 +377,23 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
 
   void _checkDown() {
     assert(_initialButtons == kPrimaryButton);
-    if (onDown != null) {
-      final DragDownDetails details = DragDownDetails(
-        globalPosition: _initialPosition.global,
-        localPosition: _initialPosition.local,
-      );
+    final DragDownDetails details = DragDownDetails(
+      globalPosition: _initialPosition.global,
+      localPosition: _initialPosition.local,
+    );
+    if (onDown != null)
       invokeCallback<void>('onDown', () => onDown!(details));
-    }
   }
 
-  void _checkStart(Duration timestamp, int pointer) {
+  void _checkStart(Duration? timestamp) {
     assert(_initialButtons == kPrimaryButton);
-    if (onStart != null) {
-      final DragStartDetails details = DragStartDetails(
-        sourceTimeStamp: timestamp,
-        globalPosition: _initialPosition.global,
-        localPosition: _initialPosition.local,
-        kind: getKindForPointer(pointer),
-      );
+    final DragStartDetails details = DragStartDetails(
+      sourceTimeStamp: timestamp,
+      globalPosition: _initialPosition.global,
+      localPosition: _initialPosition.local,
+    );
+    if (onStart != null)
       invokeCallback<void>('onStart', () => onStart!(details));
-    }
   }
 
   void _checkUpdate({
@@ -438,28 +404,26 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
     Offset? localPosition,
   }) {
     assert(_initialButtons == kPrimaryButton);
-    if (onUpdate != null) {
-      final DragUpdateDetails details = DragUpdateDetails(
-        sourceTimeStamp: sourceTimeStamp,
-        delta: delta,
-        primaryDelta: primaryDelta,
-        globalPosition: globalPosition,
-        localPosition: localPosition,
-      );
+    final DragUpdateDetails details = DragUpdateDetails(
+      sourceTimeStamp: sourceTimeStamp,
+      delta: delta,
+      primaryDelta: primaryDelta,
+      globalPosition: globalPosition,
+      localPosition: localPosition,
+    );
+    if (onUpdate != null)
       invokeCallback<void>('onUpdate', () => onUpdate!(details));
-    }
   }
 
   void _checkEnd(int pointer) {
     assert(_initialButtons == kPrimaryButton);
-    if (onEnd == null) {
+    if (onEnd == null)
       return;
-    }
 
     final VelocityTracker tracker = _velocityTrackers[pointer]!;
 
-    final DragEndDetails details;
-    final String Function() debugReport;
+    DragEndDetails details;
+    String Function() debugReport;
 
     final VelocityEstimate? estimate = tracker.getVelocityEstimate();
     if (estimate != null && isFlingGesture(estimate, tracker.kind)) {
@@ -474,23 +438,23 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
       };
     } else {
       details = DragEndDetails(
+        velocity: Velocity.zero,
         primaryVelocity: 0.0,
       );
       debugReport = () {
-        if (estimate == null) {
+        if (estimate == null)
           return 'Could not estimate velocity.';
-        }
         return '$estimate; judged to not be a fling.';
       };
     }
+
     invokeCallback<void>('onEnd', () => onEnd!(details), debugReport: debugReport);
   }
 
   void _checkCancel() {
     assert(_initialButtons == kPrimaryButton);
-    if (onCancel != null) {
+    if (onCancel != null)
       invokeCallback<void>('onCancel', onCancel!);
-    }
   }
 
   @override
@@ -498,7 +462,6 @@ abstract class CompetitiveDragGestureRecognizer extends OneSequenceGestureRecogn
     _velocityTrackers.clear();
     super.dispose();
   }
-
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -547,6 +510,7 @@ class ScrollVerticalDragGestureRecognizer extends CompetitiveDragGestureRecogniz
   @override
   String get debugDescription => 'scroll vertical drag';
 }
+
 
 /// Recognizes movement in the horizontal direction.
 ///

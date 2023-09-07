@@ -406,7 +406,7 @@ class ImageElement extends Element {
     Completer completer = Completer();
 
     // Make sure all style and properties are ready before decode begins.
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+    SchedulerBinding.instance?.addPostFrameCallback((timeStamp) {
       ImageProvider? provider = _currentImageProvider;
       if (updateImageProvider || provider == null) {
         // Image should be resized based on different ratio according to object-fit value.
@@ -433,7 +433,7 @@ class ImageElement extends Element {
           url: _resolvedUri!,
           configuration: ImageConfiguration.empty,
         );
-        PaintingBinding.instance.imageCache.evict(previousUnSizedKey, includeLive: true);
+        PaintingBinding.instance?.imageCache?.evict(previousUnSizedKey, includeLive: true);
       }
 
       ImageConfiguration imageConfiguration = _shouldScaling && cachedWidth != null && cachedHeight != null
@@ -444,7 +444,7 @@ class ImageElement extends Element {
       _isImageEncoding = false;
       completer.complete();
     });
-    SchedulerBinding.instance.scheduleFrame();
+    SchedulerBinding.instance?.scheduleFrame();
     _isImageEncoding = true;
 
     return completer.future;
@@ -498,10 +498,10 @@ class ImageElement extends Element {
     // Fire the load event at first frame come.
     if (_frameCount == 1 && !_loaded) {
       _loaded = true;
-      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      SchedulerBinding.instance?.addPostFrameCallback((timeStamp) {
         _dispatchLoadEvent();
       });
-      SchedulerBinding.instance.scheduleFrame();
+      SchedulerBinding.instance?.scheduleFrame();
     }
   }
 

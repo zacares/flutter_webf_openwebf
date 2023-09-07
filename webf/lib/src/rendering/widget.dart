@@ -10,7 +10,7 @@ import 'package:webf/rendering.dart';
 
 /// RenderBox of a widget element whose content is rendering by Flutter Widgets.
 class RenderWidget extends RenderBoxModel with RenderObjectWithChildMixin<RenderBox>, RenderProxyBoxMixin<RenderBox> {
-  RenderWidget({required super.renderStyle});
+  RenderWidget({required CSSRenderStyle renderStyle}): super(renderStyle: renderStyle);
 
   @override
   BoxSizeType get widthSizeType {

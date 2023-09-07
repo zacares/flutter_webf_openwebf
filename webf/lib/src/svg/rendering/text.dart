@@ -4,6 +4,7 @@
 
 import 'package:flutter/rendering.dart';
 import 'package:webf/rendering.dart';
+import 'package:webf/css.dart';
 import 'package:webf/svg.dart';
 
 class RenderSVGText extends RenderBoxModel
@@ -12,7 +13,7 @@ class RenderSVGText extends RenderBoxModel
 
   var _baseline = 0.0;
 
-  RenderSVGText({required super.renderStyle, this.element});
+  RenderSVGText({required CSSRenderStyle renderStyle, this.element}): super(renderStyle: renderStyle);
 
   @override
   double? computeDistanceToActualBaseline(TextBaseline baseline) {

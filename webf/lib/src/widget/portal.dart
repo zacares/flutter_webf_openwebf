@@ -23,7 +23,7 @@ class Portal extends SingleChildRenderObjectWidget {
 }
 
 class _PortalElement extends SingleChildRenderObjectElement {
-  _PortalElement(super.widget);
+  _PortalElement(SingleChildRenderObjectWidget widget): super(widget);
 
   @override
   Portal get widget => super.widget as Portal;

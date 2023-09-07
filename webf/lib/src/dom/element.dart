@@ -4,6 +4,7 @@
  */
 
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -665,8 +666,8 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
 
     if (!_shouldConsumeScrollTicker) {
       // Make sure scroll listener trigger most to 1 time each frame.
-      SchedulerBinding.instance.addPostFrameCallback(_consumeScrollTicker);
-      SchedulerBinding.instance.scheduleFrame();
+      SchedulerBinding.instance?.addPostFrameCallback(_consumeScrollTicker);
+      SchedulerBinding.instance?.scheduleFrame();
     }
     _shouldConsumeScrollTicker = true;
   }
@@ -1824,7 +1825,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
       if (renderBoxModel!.hasSize) {
         renderStyle.runAnimation();
       } else {
-        SchedulerBinding.instance.addPostFrameCallback((callback) {
+        SchedulerBinding.instance?.addPostFrameCallback((callback) {
           renderStyle.runAnimation();
         });
       }
@@ -2032,7 +2033,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
     forceToRepaintBoundary = true;
 
     Completer<Uint8List> completer = Completer();
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
+    SchedulerBinding.instance?.addPostFrameCallback((_) async {
       Uint8List captured;
       RenderBoxModel _renderBoxModel = renderBoxModel!;
 
@@ -2050,7 +2051,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
       // May be disposed before this callback.
       flushLayout();
     });
-    SchedulerBinding.instance.scheduleFrame();
+    SchedulerBinding.instance?.scheduleFrame();
 
     return completer.future;
   }

@@ -225,7 +225,7 @@ class InspectPageModule extends UIInspectorModule {
 
   void _frameScreenCast(Duration timeStamp) {
     Element root = document.documentElement!;
-    root.toBlob().then((Uint8List screenShot) {
+    root.toBlob().then((screenShot) {
       String encodedImage = base64Encode(screenShot);
       _lastSentSessionID = timeStamp.inMilliseconds;
       InspectorEvent event = PageScreenCastFrameEvent(ScreenCastFrame(
@@ -247,8 +247,8 @@ class InspectPageModule extends UIInspectorModule {
 
   void startScreenCast() {
     _isFramingScreenCast = true;
-    SchedulerBinding.instance.addPostFrameCallback(_frameScreenCast);
-    SchedulerBinding.instance.scheduleFrame();
+    SchedulerBinding.instance?.addPostFrameCallback(_frameScreenCast);
+    SchedulerBinding.instance?.scheduleFrame();
   }
 
   void stopScreenCast() {
@@ -260,7 +260,7 @@ class InspectPageModule extends UIInspectorModule {
   void handleScreencastFrameAck(Map<String, dynamic> params) {
     int? ackSessionID = params['sessionId'];
     if (ackSessionID == _lastSentSessionID && _isFramingScreenCast) {
-      SchedulerBinding.instance.addPostFrameCallback(_frameScreenCast);
+      SchedulerBinding.instance?.addPostFrameCallback(_frameScreenCast);
     }
   }
 }
