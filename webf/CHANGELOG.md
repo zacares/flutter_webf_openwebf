@@ -1,3 +1,10 @@
+## 0.15.0+1
+
+**Bug Fixed**
+
+1. fix location search and hostname params. https://github.com/openwebf/webf/pull/485
+2. fix ::empty selector. https://github.com/openwebf/webf/pull/434
+
 ## 0.15.0
 
 This version will support Flutter 3.10.x
