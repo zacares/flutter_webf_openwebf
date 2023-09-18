@@ -1,9 +1,15 @@
+## 0.15.0+2
+
+**Bug Fixed**
+
+1. Fix setTextContent on WidgetElement. https://github.com/openwebf/webf/pull/486
+
 ## 0.15.0+1
 
 **Bug Fixed**
 
-1. fix location search and hostname params. https://github.com/openwebf/webf/pull/485
-2. fix ::empty selector. https://github.com/openwebf/webf/pull/434
+1. Fix location search and hostname params. https://github.com/openwebf/webf/pull/485
+2. Fix ::empty selector. https://github.com/openwebf/webf/pull/434
 
 ## 0.15.0
 
