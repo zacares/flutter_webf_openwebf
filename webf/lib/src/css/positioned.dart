@@ -3,10 +3,10 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:webf/css.dart';
 import 'package:webf/dom.dart';
+import 'package:webf/foundation.dart';
 import 'package:webf/rendering.dart';
 
 // CSS Positioned Layout: https://drafts.csswg.org/css-position/
@@ -15,7 +15,7 @@ import 'package:webf/rendering.dart';
 // We need to reset these offset to keep positioned elements render at their original position.
 // @NOTE: Attention that renderObjects in tree may not all subtype of RenderBoxModel, use `is` to identify.
 Offset? _getRenderPositionHolderScrollOffset(RenderPositionPlaceholder holder, RenderObject root) {
-  AbstractNode? current = holder.parent;
+  RenderObject? current = holder.parent;
   while (current != null && current != root) {
     if (current is RenderBoxModel) {
       if (current.clipX || current.clipY) {
@@ -273,8 +273,16 @@ class CSSPositionedLayout {
     }
 
     if (isChildNeedsLayout) {
+      if (enableWebFProfileTracking) {
+        WebFProfiler.instance.pauseCurrentLayoutOp();
+      }
+
       // Should create relayoutBoundary for positioned child.
       child.layout(childConstraints, parentUsesSize: false);
+
+      if (enableWebFProfileTracking) {
+        WebFProfiler.instance.resumeCurrentLayoutOp();
+      }
     }
   }
 

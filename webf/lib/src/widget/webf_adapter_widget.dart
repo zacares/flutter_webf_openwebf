@@ -5,6 +5,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:webf/dom.dart' as dom;
+import 'package:webf/foundation.dart';
 import 'package:webf/widget.dart';
 
 
@@ -34,10 +35,16 @@ class WebFWidgetElementElement extends StatefulElement {
 
   @override
   void mount(Element? parent, Object? newSlot) {
+    if (enableWebFProfileTracking) {
+      WebFProfiler.instance.startTrackUICommand();
+    }
     super.mount(parent, newSlot);
     // Make sure RenderWidget had been created.
     if (widget.widgetElement.renderer == null) {
       widget.widgetElement.createRenderer();
+    }
+    if (enableWebFProfileTracking) {
+      WebFProfiler.instance.finishTrackUICommand();
     }
   }
 }
@@ -59,6 +66,17 @@ class WebFWidgetElementState extends State<WebFWidgetElementStatefulWidget> {
     }
   }
 
+  List<Widget>? _cachedChildren;
+  /// Return the previous built widget lists. When the DOM nodes change, the children property will be updated.
+  List<Widget>? get children => _cachedChildren;
+
+  void markChildrenNeedsUpdate() {
+    _cachedChildren = null;
+    if (mounted) {
+      requestUpdateState();
+    }
+  }
+
   Widget buildNodeWidget(dom.Node node, {Key? key}) {
     if (node is dom.CharacterData) {
       return WebFCharacterDataToWidgetAdaptor(node, key: key);
@@ -67,22 +85,21 @@ class WebFWidgetElementState extends State<WebFWidgetElementStatefulWidget> {
   }
 
   List<Widget> convertNodeListToWidgetList(List<dom.Node> childNodes) {
-    List<Widget> children = List.generate(childNodes.length, (index) {
-      if (childNodes[index] is WidgetElement) {
-        return (childNodes[index] as WidgetElement).widget;
-      } else {
-        return childNodes[index].flutterWidget ??
-            buildNodeWidget(childNodes[index], key: Key(childNodes[index].hashCode.toString()));
+    if (_cachedChildren != null) return _cachedChildren!;
+
+    List<Widget> children = [];
+
+    for(dom.Node node in childNodes) {
+      if (node is WidgetElement) {
+        children.add((node.widget));
+      } else if (node is dom.TextNode && node.data.isNotEmpty || node is dom.Element) {
+        children.add(node.flutterWidget ?? buildNodeWidget(node, key: Key(node.hashCode.toString())));
       }
-    });
+    }
+
+    _cachedChildren = children;
 
     return children;
-  }
-
-  void onChildrenChanged() {
-    if (mounted) {
-      requestUpdateState();
-    }
   }
 
   @override

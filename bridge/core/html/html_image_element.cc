@@ -22,7 +22,8 @@ ScriptPromise HTMLImageElement::decode(ExceptionState& exception_state) const {
 
 AtomicString HTMLImageElement::src() const {
   ExceptionState exception_state;
-  NativeValue native_value = GetBindingProperty(binding_call_methods::ksrc, exception_state);
+  NativeValue native_value =
+      GetBindingProperty(binding_call_methods::ksrc, FlushUICommandReason::kDependentsOnElement, exception_state);
   typename NativeTypeString::ImplType v =
       NativeValueConverter<NativeTypeString>::FromNativeValue(ctx(), std::move(native_value));
   if (UNLIKELY(exception_state.HasException())) {
@@ -45,6 +46,16 @@ DispatchEventResult HTMLImageElement::FireEventListeners(Event& event, Exception
   }
 
   return HTMLElement::FireEventListeners(event, exception_state);
+}
+
+DispatchEventResult HTMLImageElement::FireEventListeners(webf::Event& event,
+                                                         bool isCapture,
+                                                         webf::ExceptionState& exception_state) {
+  if (event.type() == event_type_names::kload || event.type() == event_type_names::kerror) {
+    ReleaseAlive();
+  }
+
+  return HTMLElement::FireEventListeners(event, isCapture, exception_state);
 }
 
 }  // namespace webf

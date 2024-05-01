@@ -6,6 +6,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:webf/css.dart';
 import 'package:webf/dom.dart';
+import 'package:webf/foundation.dart';
 import 'package:webf/rendering.dart';
 
 // White space processing in CSS affects only the document white space characters:
@@ -61,7 +62,7 @@ class RenderTextBox extends RenderBox with RenderObjectWithChildMixin<RenderBox>
       // pre-wrap  Preserve  Preserve  Wrap     Hang
       // pre-line  Preserve  Collapse  Wrap     Remove
       // break-spaces  Preserve  Preserve  Wrap  Wrap
-      CSSRenderStyle parentRenderStyle = (parent as RenderLayoutBox).renderStyle;
+      CSSRenderStyle parentRenderStyle = (parent as RenderBoxModel).renderStyle;
       WhiteSpace whiteSpace = parentRenderStyle.whiteSpace;
       if (whiteSpace == WhiteSpace.pre ||
           whiteSpace == WhiteSpace.preLine ||
@@ -198,7 +199,14 @@ class RenderTextBox extends RenderBox with RenderObjectWithChildMixin<RenderBox>
   }
 
   BoxConstraints getConstraints() {
+    if (enableWebFProfileTracking) {
+      WebFProfiler.instance.startTrackLayoutStep('RenderTextBox.getConstraints()');
+    }
+
     if (renderStyle.whiteSpace == WhiteSpace.nowrap && renderStyle.effectiveTextOverflow != TextOverflow.ellipsis) {
+      if (enableWebFProfileTracking) {
+        WebFProfiler.instance.finishTrackLayoutStep();
+      }
       return BoxConstraints();
     }
 
@@ -233,6 +241,10 @@ class RenderTextBox extends RenderBox with RenderObjectWithChildMixin<RenderBox>
 
         maxConstraintWidth = parentConstraints.maxWidth - horizontalPaddingLength - horizontalBorderLength;
       }
+    }
+
+    if (enableWebFProfileTracking) {
+      WebFProfiler.instance.finishTrackLayoutStep();
     }
 
     // Text will not overflow from container, so it can inherit

@@ -4,6 +4,7 @@
 const { spawn, spawnSync } = require('child_process');
 const path = require('path');
 const os = require('os');
+const { startWsServer } = require('./ws_server');
 
 function getRunningPlatform() {
   if (os.platform() == 'darwin') return 'macos';
@@ -16,7 +17,7 @@ function startIntegrationTest() {
   const shouldSkipBuild = /skip\-build/.test(process.argv);
   if (!shouldSkipBuild) {
     console.log('Building integration tests macOS application from "lib/main.dart"...');
-    spawnSync('flutter', ['build', getRunningPlatform(), '--profile'], {
+    spawnSync('flutter', ['build', getRunningPlatform(), '--debug'], {
       stdio: 'inherit'
     });
   }
@@ -26,9 +27,9 @@ function startIntegrationTest() {
   if (platform === 'linux') {
     testExecutable = path.join(__dirname, '../build/linux/x64/debug/bundle/app');
   } else if (platform === 'darwin') {
-    testExecutable = path.join(__dirname, '../build/macos/Build/Products/Profile/tests.app/Contents/MacOS/tests');
+    testExecutable = path.join(__dirname, '../build/macos/Build/Products/Debug/tests.app/Contents/MacOS/tests');
   } else if (platform == 'win32') {
-    testExecutable = path.join(__dirname, '../build/windows/runner/Profile/app.exe');
+    testExecutable = path.join(__dirname, '../build/windows/runner/Debug/app.exe');
   } else {
     throw new Error('Unsupported platform:' + platform);
   }
@@ -48,7 +49,7 @@ function startIntegrationTest() {
   tester.stdout.on('data', (data) => {
     console.log(`${data && data.toString().trim()}`);
   });
-  
+
   tester.stderr.on('data', (data) => {
     console.error(`${data && data.toString().trim()}`);
   });
@@ -72,3 +73,4 @@ function startIntegrationTest() {
 }
 
 startIntegrationTest();
+startWsServer(8399);

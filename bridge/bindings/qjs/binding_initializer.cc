@@ -33,6 +33,7 @@
 #include "qjs_event_target.h"
 #include "qjs_focus_event.h"
 #include "qjs_gesture_event.h"
+#include "qjs_hashchange_event.h"
 #include "qjs_html_all_collection.h"
 #include "qjs_html_anchor_element.h"
 #include "qjs_html_body_element.h"
@@ -61,6 +62,9 @@
 #include "qjs_message_event.h"
 #include "qjs_module_manager.h"
 #include "qjs_mouse_event.h"
+#include "qjs_mutation_observer.h"
+#include "qjs_mutation_observer_registration.h"
+#include "qjs_mutation_record.h"
 #include "qjs_node.h"
 #include "qjs_node_list.h"
 #include "qjs_performance.h"
@@ -115,6 +119,7 @@ void InstallBindings(ExecutingContext* context) {
   QJSCloseEvent::Install(context);
   QJSFocusEvent::Install(context);
   QJSGestureEvent::Install(context);
+  QJSHashchangeEvent::Install(context);
   QJSInputEvent::Install(context);
   QJSCustomEvent::Install(context);
   QJSMouseEvent::Install(context);
@@ -166,6 +171,9 @@ void InstallBindings(ExecutingContext* context) {
   QJSTouch::Install(context);
   QJSTouchList::Install(context);
   QJSDOMStringMap::Install(context);
+  QJSMutationObserver::Install(context);
+  QJSMutationRecord::Install(context);
+  QJSMutationObserverRegistration::Install(context);
   QJSDOMTokenList::Install(context);
   QJSPerformance::Install(context);
   QJSPerformanceEntry::Install(context);
