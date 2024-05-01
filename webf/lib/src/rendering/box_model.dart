@@ -37,8 +37,8 @@ class RenderLayoutParentData extends ContainerBoxParentData<RenderBox> {
 // ReturgetLayoutTransformTolocal layout coordinate system to the
 // coordinate system of `ancestor`.
 Offset getLayoutTransformTo(RenderObject current, RenderObject ancestor, {bool excludeScrollOffset = false}) {
-  final List<RenderObject> renderers = <RenderObject>[];
-  for (RenderObject renderer = current; renderer != ancestor; renderer = renderer.parent!) {
+  final List<AbstractNode> renderers = <AbstractNode>[];
+  for (AbstractNode renderer = current; renderer != ancestor; renderer = renderer.parent!) {
     renderers.add(renderer);
     assert(renderer.parent != null);
   }
@@ -47,8 +47,8 @@ Offset getLayoutTransformTo(RenderObject current, RenderObject ancestor, {bool e
   final Matrix4 transform = Matrix4.identity();
 
   for (int index = renderers.length - 1; index > 0; index -= 1) {
-    RenderObject parentRenderer = renderers[index];
-    RenderObject childRenderer = renderers[index - 1];
+    RenderObject parentRenderer = renderers[index] as RenderObject;
+    RenderObject childRenderer = renderers[index - 1] as RenderObject;
     // Apply the layout transform for renderBoxModel and fallback to paint transform for other renderObject type.
     if (parentRenderer is RenderBoxModel) {
       offset += parentRenderer.obtainLayoutTransform(childRenderer, excludeScrollOffset);
@@ -903,7 +903,7 @@ class RenderBoxModel extends RenderBox
   // child has percentage length and parent's size can not be calculated by style
   // thus parent needs relayout for its child calculate percentage length.
   void markParentNeedsRelayout() {
-    RenderObject? parent = this.parent;
+    AbstractNode? parent = this.parent;
     if (parent is RenderBoxModel) {
       parent.needsRelayout = true;
     }
@@ -1210,7 +1210,7 @@ class RenderBoxModel extends RenderBox
   /// Find scroll container
   RenderBoxModel? findScrollContainer() {
     RenderBoxModel? scrollContainer;
-    RenderObject? parent = this.parent;
+    AbstractNode? parent = this.parent;
 
     while (parent != null && parent is RenderLayoutBox) {
       if (parent.isScrollingContentBox && parent.parent is RenderLayoutBox) {
@@ -1578,7 +1578,7 @@ class RenderBoxModel extends RenderBox
   Offset getTotalScrollOffset() {
     double top = scrollTop;
     double left = scrollLeft;
-    RenderObject? parentNode = parent;
+    AbstractNode? parentNode = parent;
     while (parentNode is RenderBoxModel) {
       top += parentNode.scrollTop;
       left += parentNode.scrollLeft;
@@ -1719,7 +1719,7 @@ class RenderBoxModel extends RenderBox
   }
 
   // Attach renderBox from tree.
-  static void attachRenderBox(RenderObject parentRenderObject, RenderBox renderBox,
+  static void attachRenderBox(AbstractNode parentRenderObject, RenderBox renderBox,
       {RenderObject? after, bool isLast = false}) {
     if (isLast) {
       assert(after == null);

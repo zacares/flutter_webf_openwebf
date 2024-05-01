@@ -5,6 +5,7 @@
 
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:webf/css.dart';
@@ -188,7 +189,7 @@ class CSSLengthValue {
         RenderBoxModel? renderBoxModel = renderStyle!.renderBoxModel;
         // Should access the renderStyle of renderBoxModel parent but not renderStyle parent
         // cause the element of renderStyle parent may not equal to containing block.
-        RenderObject? containerRenderBox = renderBoxModel?.parent;
+        AbstractNode? containerRenderBox = renderBoxModel?.parent;
         CSSRenderStyle? parentRenderStyle;
         while (containerRenderBox != null) {
           if (containerRenderBox is RenderBoxModel && (_isPercentageRelativeContainer(containerRenderBox))) {

@@ -734,7 +734,6 @@ class WebFViewController implements WidgetsBindingObserver {
         document.visibilityChange(VisibilityState.visible);
         rootController.resume();
         break;
-      case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         document.visibilityChange(VisibilityState.hidden);
         rootController.pause();

@@ -2,6 +2,7 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:webf/rendering.dart';
 import 'package:webf/dom.dart';
@@ -157,7 +158,7 @@ class RenderSliverRepaintProxy extends RenderProxyBox {
   void detach() {
     super.detach();
     if(child != null) {
-      RenderObject? parentRenderObject = child!.parent;
+      AbstractNode? parentRenderObject = child!.parent;
       if(parentRenderObject is RenderObjectWithChildMixin) {
         parentRenderObject.child = null;
       }

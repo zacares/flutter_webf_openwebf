@@ -6,10 +6,8 @@
 import 'dart:ui' as ui show LineMetrics, Gradient, Shader, TextBox, TextHeightBehavior;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:webf/css.dart';
-import 'package:webf/foundation.dart';
 
 const String _kEllipsis = '\u2026';
 
@@ -21,7 +19,8 @@ const String _kEllipsis = '\u2026';
 class WebFRenderParagraph extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TextParentData>,
-        RenderInlineChildrenContainerDefaults, RelayoutWhenSystemFontsChangeMixin {
+        RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
+        RelayoutWhenSystemFontsChangeMixin {
   /// Creates a paragraph render object.
   ///
   /// The [text], [textAlign], [textDirection], [overflow], [softWrap], and
@@ -30,20 +29,20 @@ class WebFRenderParagraph extends RenderBox
   /// The [maxLines] property may be null (and indeed defaults to null), but if
   /// it is not null, it must be greater than zero.
   WebFRenderParagraph(
-    InlineSpan text, {
-    TextAlign textAlign = TextAlign.start,
-    required TextDirection textDirection,
-    bool softWrap = true,
-    TextOverflow overflow = TextOverflow.clip,
-    double textScaleFactor = 1.0,
-    int? maxLines,
-    Locale? locale,
-    StrutStyle? strutStyle,
-    TextWidthBasis textWidthBasis = TextWidthBasis.parent,
-    ui.TextHeightBehavior? textHeightBehavior,
-    List<RenderBox>? children,
-    TextPainterCallback? foregroundCallback,
-  })  : assert(text.debugAssertIsValid()),
+      InlineSpan text, {
+        TextAlign textAlign = TextAlign.start,
+        required TextDirection textDirection,
+        bool softWrap = true,
+        TextOverflow overflow = TextOverflow.clip,
+        double textScaleFactor = 1.0,
+        int? maxLines,
+        Locale? locale,
+        StrutStyle? strutStyle,
+        TextWidthBasis textWidthBasis = TextWidthBasis.parent,
+        ui.TextHeightBehavior? textHeightBehavior,
+        List<RenderBox>? children,
+        TextPainterCallback? foregroundCallback,
+      })  : assert(text.debugAssertIsValid()),
         assert(maxLines == null || maxLines > 0),
         _softWrap = softWrap,
         _overflow = overflow,
@@ -253,14 +252,37 @@ class WebFRenderParagraph extends RenderBox
   bool hitTestSelf(Offset position) => true;
 
   @override
-  bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
-    final TextPosition textPosition = _textPainter.getPositionForOffset(position);
-    final Object? span = _textPainter.text!.getSpanForPosition(textPosition);
-    if (span is HitTestTarget) {
-      result.add(HitTestEntry(span));
-      return true;
+  bool hitTestChildren(BoxHitTestResult result, {Offset? position}) {
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final TextParentData textParentData = child.parentData as TextParentData;
+      final Matrix4 transform = Matrix4.translationValues(
+        textParentData.offset.dx,
+        textParentData.offset.dy,
+        0.0,
+      )..scale(
+        textParentData.scale,
+        textParentData.scale,
+        textParentData.scale,
+      );
+      final bool isHit = result.addWithPaintTransform(
+        transform: transform,
+        position: position!,
+        hitTest: (BoxHitTestResult result, Offset transformed) {
+          assert(() {
+            final Offset manualPosition = (position - textParentData.offset) / textParentData.scale!;
+            return (transformed.dx - manualPosition.dx).abs() < precisionErrorTolerance &&
+                (transformed.dy - manualPosition.dy).abs() < precisionErrorTolerance;
+          }());
+          return child!.hitTest(result, position: transformed);
+        },
+      );
+      if (isHit) {
+        return true;
+      }
+      child = childAfter(child);
     }
-    return hitTestInlineChildren(result, position);
+    return false;
   }
 
   @override
@@ -521,9 +543,6 @@ class WebFRenderParagraph extends RenderBox
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (enableWebFProfileTracking) {
-      WebFProfiler.instance.startTrackPaint(this);
-    }
     assert(() {
       if (debugRepaintTextRainbowEnabled) {
         final Paint paint = Paint()..color = debugCurrentRepaintColor.toColor();
@@ -570,10 +589,6 @@ class WebFRenderParagraph extends RenderBox
         context.canvas.drawRect(Offset.zero & size, paint);
       }
       context.canvas.restore();
-    }
-
-    if (enableWebFProfileTracking) {
-      WebFProfiler.instance.finishTrackPaint(this);
     }
   }
 
