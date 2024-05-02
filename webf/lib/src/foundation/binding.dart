@@ -134,9 +134,9 @@ abstract class DynamicBindingObject extends BindingObject {
       }
     });
 
-    toNativeValue(data.elementAt(0), properties);
-    toNativeValue(data.elementAt(1), syncMethods);
-    toNativeValue(data.elementAt(2), asyncMethods);
+    toNativeValue(data + 0, properties);
+    toNativeValue(data + 1, syncMethods);
+    toNativeValue(data + 2, asyncMethods);
   }
 
   // Call a method, eg:
@@ -333,7 +333,7 @@ void invokeBindingMethodFromNativeImpl(double contextId, int profileId, Pointer<
 
   dynamic method = fromNativeValue(controller.view, nativeMethod);
   List<dynamic> values = List.generate(argc, (i) {
-    Pointer<NativeValue> nativeValue = argv.elementAt(i);
+    Pointer<NativeValue> nativeValue = argv + i;
     return fromNativeValue(controller.view, nativeValue);
   });
 

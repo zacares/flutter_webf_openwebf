@@ -7,7 +7,7 @@ import 'package:webf/src/svg/rendering/empty.dart';
 import 'package:webf/svg.dart';
 
 class SVGUnknownElement extends SVGElement {
-  SVGUnknownElement(super.context) {}
+  SVGUnknownElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

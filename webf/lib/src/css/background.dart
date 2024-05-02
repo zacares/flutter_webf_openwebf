@@ -751,7 +751,9 @@ List<CSSColorStop> _parseColorAndStop(String src, RenderStyle renderStyle, Strin
           CSSColor? color = CSSColor.resolveColor(strings[0], renderStyle, propertyName);
           colorGradients.add(CSSColorStop(color?.value, stop));
         }
-      } catch (e) {}
+      } catch (e) {
+        // do nothing
+      }
     } else {
       CSSColor? color = CSSColor.resolveColor(strings[0], renderStyle, propertyName);
       colorGradients.add(CSSColorStop(color?.value, stop));

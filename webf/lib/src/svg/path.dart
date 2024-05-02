@@ -12,7 +12,7 @@ class SVGPathElement extends SVGGeometryElement {
   get presentationAttributeConfigs => super.presentationAttributeConfigs
     ..addAll([SVGPresentationAttributeConfig('d')]);
 
-  SVGPathElement(super.context) {}
+  SVGPathElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

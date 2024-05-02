@@ -42,7 +42,7 @@ class SVGSVGElement extends SVGGraphicsElement {
       SVGPresentationAttributeConfig('height', property: true),
     ]);
 
-  SVGSVGElement(super.context) {}
+  SVGSVGElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

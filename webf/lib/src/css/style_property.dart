@@ -555,7 +555,7 @@ class CSSStyleProperty {
     }
 
     if (positionY != null) {
-      position = position! + (' ' + positionY);
+      position = position! + (' $positionY');
     }
 
     if (sizeWidth != null) {
@@ -563,7 +563,7 @@ class CSSStyleProperty {
     }
 
     if (sizeHeight != null) {
-      size = size! + (' ' + sizeHeight);
+      size = size! + (' $sizeHeight');
     }
 
     return [color, image, repeat, attachment, position, size];

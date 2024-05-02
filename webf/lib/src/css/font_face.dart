@@ -65,7 +65,9 @@ class CSSFontFace {
                 if (decoded.isNotEmpty) {
                   fonts.add(_Font.content(decoded));
                 }
-              } catch(e) {}
+              } catch(e) {
+                // do nothing
+              }
             }
 
           } else {

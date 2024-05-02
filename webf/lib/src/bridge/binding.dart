@@ -52,9 +52,9 @@ void _handleDispatchResult(_DispatchEventResultContext context, Pointer<NativeVa
   Event event = context.event;
   event.cancelable = dispatchResult.ref.canceled;
   event.propagationStopped = dispatchResult.ref.propagationStopped;
-  event.sharedJSProps = Pointer.fromAddress(context.rawEvent.ref.bytes.elementAt(8).value);
-  event.propLen = context.rawEvent.ref.bytes.elementAt(9).value;
-  event.allocateLen = context.rawEvent.ref.bytes.elementAt(10).value;
+  event.sharedJSProps = Pointer.fromAddress((context.rawEvent.ref.bytes + 8).value);
+  event.propLen = (context.rawEvent.ref.bytes + 9).value;
+  event.allocateLen = (context.rawEvent.ref.bytes + 10).value;
 
   if (enableWebFCommandLog && context.stopwatch != null) {
     print('dispatch event to native side: target: ${event.target} arguments: ${context.dispatchEventArguments} time: ${context.stopwatch!.elapsedMicroseconds}us');
@@ -169,7 +169,7 @@ abstract class BindingBridge {
   static void createBindingObject(double contextId, Pointer<NativeBindingObject> pointer, CreateBindingObjectType type, Pointer<NativeValue> args, int argc) {
     WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
     List<dynamic> arguments = List.generate(argc, (index) {
-      return fromNativeValue(controller.view, args.elementAt(index));
+      return fromNativeValue(controller.view, args + index);
     });
     switch(type) {
       case CreateBindingObjectType.createDOMMatrix: {

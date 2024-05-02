@@ -438,8 +438,8 @@ class _Interpolation {
   double endOffset;
   Curve? easing;
   String property;
-  var begin;
-  var end;
+  dynamic begin;
+  dynamic end;
   Function lerp;
 
   _Interpolation(

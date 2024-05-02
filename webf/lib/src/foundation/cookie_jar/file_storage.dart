@@ -27,6 +27,7 @@ class FileStorage implements Storage {
       try {
         await file.delete(recursive: true);
       } catch(e) {
+        // do nothing
       }
     }
   }
@@ -38,6 +39,7 @@ class FileStorage implements Storage {
       try {
         file.deleteSync(recursive: true);
       } catch(e) {
+        // do nothing
       }
     }
   }
@@ -47,6 +49,7 @@ class FileStorage implements Storage {
     try {
       await Directory(_curDir!).delete(recursive: true);
     } catch(e) {
+      // do nothing
     }
   }
 
@@ -57,6 +60,7 @@ class FileStorage implements Storage {
       try {
         dir.deleteSync(recursive: true);
       } catch(e) {
+        // do nothing
       }
     }
   }

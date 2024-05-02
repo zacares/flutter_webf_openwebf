@@ -11,7 +11,7 @@ class SVGTextElement extends SVGTextPositioningElement {
   @override
   get presentationAttributeConfigs => super.presentationAttributeConfigs..addAll([]);
 
-  SVGTextElement(super.context) {}
+  SVGTextElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

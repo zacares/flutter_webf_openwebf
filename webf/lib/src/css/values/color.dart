@@ -288,7 +288,7 @@ class CSSColor {
       bool isRgba = color.startsWith(RGBA);
       String colorBody = color.substring(isRgba ? 5 : 4, color.length - 1);
 
-      final rgbMatch;
+      dynamic rgbMatch;
       if (renderStyle != null && colorBody.contains('var')) {
         final result = CSSVariable.tryReplaceVariableInString(colorBody, renderStyle);
         rgbMatch = _colorRgbRegExp.firstMatch(result);
@@ -309,7 +309,7 @@ class CSSColor {
       bool isHsla = color.startsWith(HSLA);
       String colorBody = color.substring(isHsla ? 5 : 4, color.length - 1);
 
-      final hslMatch;
+      dynamic hslMatch;
       if (renderStyle != null && colorBody.contains('var')) {
         final result = CSSVariable.tryReplaceVariableInString(colorBody, renderStyle);
         hslMatch = _colorHslRegExp.firstMatch(result);

@@ -483,8 +483,8 @@ class CSSLengthValue {
 
   /// Compares two length for equality.
   @override
-  bool operator ==(Object? other) {
-    return (other == null && (type == CSSLengthType.UNKNOWN || type == CSSLengthType.INITIAL)) ||
+  bool operator ==(Object other) {
+    return (type == CSSLengthType.UNKNOWN || type == CSSLengthType.INITIAL) ||
         (other is CSSLengthValue &&
             other.value == value &&
             other.calcValue == calcValue &&

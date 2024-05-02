@@ -16,7 +16,7 @@ class SVGCircleElement extends SVGGeometryElement {
       SVGPresentationAttributeConfig('r'),
     ]);
 
-  SVGCircleElement(super.context) {}
+  SVGCircleElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

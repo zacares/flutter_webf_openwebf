@@ -18,7 +18,7 @@ class SVGRectElement extends SVGGeometryElement {
       SVGPresentationAttributeConfig('ry', property: true)
     ]);
 
-  SVGRectElement(super.context) {}
+  SVGRectElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

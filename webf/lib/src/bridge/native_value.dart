@@ -72,7 +72,7 @@ dynamic fromNativeValue(WebFViewController view, Pointer<NativeValue> nativeValu
     case JSValueType.TAG_LIST:
       Pointer<NativeValue> head = Pointer.fromAddress(nativeValue.ref.u).cast<NativeValue>();
       List result = List.generate(nativeValue.ref.uint32, (index) {
-        return fromNativeValue(view, head.elementAt(index));
+        return fromNativeValue(view, head + index);
       });
       malloc.free(head);
       return result;
@@ -128,7 +128,7 @@ void toNativeValue(Pointer<NativeValue> target, value, [BindingObject? ownerBind
     Pointer<NativeValue> lists = malloc.allocate(sizeOf<NativeValue>() * value.length);
     target.ref.u = lists.address;
     for(int i = 0; i < value.length; i ++) {
-      toNativeValue(lists.elementAt(i), value[i], ownerBindingObject);
+      toNativeValue(lists + i, value[i], ownerBindingObject);
     }
   } else if (value is Object) {
     String str = jsonEncode(value);
@@ -141,7 +141,7 @@ Pointer<NativeValue> makeNativeValueArguments(BindingObject ownerBindingObject, 
   Pointer<NativeValue> buffer = malloc.allocate(sizeOf<NativeValue>() * args.length);
 
   for(int i = 0; i < args.length; i ++) {
-    toNativeValue(buffer.elementAt(i), args[i], ownerBindingObject);
+    toNativeValue(buffer + i, args[i], ownerBindingObject);
   }
 
   return buffer.cast<NativeValue>();

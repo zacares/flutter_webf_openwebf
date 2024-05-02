@@ -16,7 +16,7 @@ class SVGLineElement extends SVGGeometryElement {
       SVGPresentationAttributeConfig('y2'),
     ]);
 
-  SVGLineElement(super.context) {}
+  SVGLineElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

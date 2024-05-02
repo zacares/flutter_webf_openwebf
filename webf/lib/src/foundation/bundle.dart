@@ -28,10 +28,10 @@ const List<String> _supportedByteCodeVersions = ['1'];
 bool _isSupportedBytecode(String mimeType, Uri? uri) {
   if (uri != null) {
     for (int i = 0; i < _supportedByteCodeVersions.length; i++) {
-      if (mimeType.contains('application/vnd.webf.bc' + _supportedByteCodeVersions[i])) return true;
+      if (mimeType.contains('application/vnd.webf.bc${_supportedByteCodeVersions[i]}')) return true;
       // @NOTE: This is useful for most http server that did not recognize a .kbc1 file.
       // Simply treat some.kbc1 file as the bytecode.
-      if (uri.path.endsWith('.kbc' + _supportedByteCodeVersions[i])) return true;
+      if (uri.path.endsWith('.kbc${_supportedByteCodeVersions[i]}')) return true;
     }
   }
   return false;

@@ -85,5 +85,5 @@ class CSSVariable {
   int get hashCode => identifier.hashCode;
 
   @override
-  bool operator ==(Object? other) => other is CSSVariable && other.identifier == identifier;
+  bool operator ==(Object other) => other is CSSVariable && other.identifier == identifier;
 }

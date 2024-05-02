@@ -8,7 +8,7 @@ import 'package:webf/svg.dart';
 import 'rendering/container.dart';
 
 class SVGGElement extends SVGGraphicsElement {
-  SVGGElement(super.context) {}
+  SVGGElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

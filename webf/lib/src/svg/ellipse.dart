@@ -27,7 +27,7 @@ class SVGEllipseElement extends SVGGeometryElement {
       SVGPresentationAttributeConfig('r'),
     ]);
 
-  SVGEllipseElement(super.context) {}
+  SVGEllipseElement(super.context);
 
   @override
   RenderBoxModel createRenderSVG({RenderBoxModel? previous, bool isRepaintBoundary = false}) {

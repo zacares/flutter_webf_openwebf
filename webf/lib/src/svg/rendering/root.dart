@@ -46,7 +46,7 @@ class RenderSVGRoot extends RenderSVGContainer {
     Rect? viewBox,
     SVGPreserveAspectRatio? ratio,
   })  : _viewBox = viewBox,
-        _ratio = ratio ?? const SVGPreserveAspectRatio() {}
+        _ratio = ratio ?? const SVGPreserveAspectRatio();
 
   @override
   void performPaint(PaintingContext context, Offset offset) {

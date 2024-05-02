@@ -333,7 +333,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
   }
 
   dynamic getElementsByClassName(List<dynamic> args) {
-    return QuerySelector.querySelectorAll(this, '.' + args.first);
+    return QuerySelector.querySelectorAll(this, '.${args.first}');
   }
 
   dynamic getElementsByTagName(List<dynamic> args) {

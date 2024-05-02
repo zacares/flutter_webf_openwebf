@@ -70,8 +70,7 @@ class HTMLElementState extends State<WebFHTMLElementStatefulWidget> {
 
 class WebFHTMLElementToWidgetAdaptor extends MultiChildRenderObjectWidget {
   WebFHTMLElementToWidgetAdaptor(this._webFElement, {Key? key, required List<Widget> children})
-      : super(key: key, children: children) {
-  }
+      : super(key: key, children: children);
 
   final dom.Element _webFElement;
   dom.Element get webFElement => _webFElement;

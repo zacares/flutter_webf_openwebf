@@ -202,7 +202,7 @@ class HTMLAnchorElement extends Element {
     String? search;
     String? query = _resolvedHyperlink?.query;
     if (query != null && query.isNotEmpty) {
-      search = '?' + query;
+      search = '?$query';
     }
     return _DOMString(search);
   }

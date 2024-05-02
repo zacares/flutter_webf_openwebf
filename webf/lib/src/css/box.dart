@@ -70,48 +70,23 @@ mixin CSSBoxMixin on RenderStyle {
 
 class CSSBoxDecoration extends BoxDecoration {
   CSSBoxDecoration({
-    this.color,
-    this.image,
-    this.border,
-    this.borderRadius,
-    this.boxShadow,
-    this.gradient,
-    this.backgroundBlendMode,
-    this.shape = BoxShape.rectangle,
-  }) : super(
-            color: color,
-            image: image,
-            border: border,
-            borderRadius: borderRadius,
-            gradient: gradient,
-            backgroundBlendMode: backgroundBlendMode,
-            shape: shape);
-
-  @override
-  final Color? color;
-
-  @override
-  final DecorationImage? image;
-
-  @override
-  final BoxBorder? border;
-
-  @override
-  final BorderRadius? borderRadius;
-
-  @override
-  final List<WebFBoxShadow>? boxShadow;
-
-  @override
-  final Gradient? gradient;
-
-  @override
-  final BlendMode? backgroundBlendMode;
-
-  @override
-  final BoxShape shape;
+    super.color,
+    super.image,
+    super.border,
+    super.borderRadius,
+    super.boxShadow,
+    super.gradient,
+    super.backgroundBlendMode,
+    super.shape = BoxShape.rectangle,
+  });
 
   bool get hasBorderRadius => borderRadius != null && borderRadius != BorderRadius.zero;
+
+  @override
+  BorderRadius? get borderRadius => super.borderRadius as BorderRadius?;
+
+  @override
+  List<WebFBoxShadow>? get boxShadow => super.boxShadow as List<WebFBoxShadow>?;
 
   CSSBoxDecoration clone({
     Color? color,

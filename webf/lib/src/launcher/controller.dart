@@ -182,8 +182,7 @@ class WebFViewController implements WidgetsBindingObserver {
       required this.runningThread,
       this.navigationDelegate,
       this.gestureListener,
-      this.initialCookies}) {
-  }
+      this.initialCookies});
 
   Future<void> initialize() async {
     if (enableDebug) {
