@@ -1,11 +1,5 @@
 ## 0.14.4
 
-
-This version supports Flutter 3.19.x, 3.16.x, and 3.13.x.
-
-A version compatible with Flutter 3.10.x landed in **0.15.2**.
-A version compatible with Flutter 3.7.x landed in **0.14.4**.
-
 **Architecture Upgrade**
 
 The JavaScript Runtime has now migrated to a dedicated thread and is enabled by default in this version.
