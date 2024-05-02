@@ -39,6 +39,7 @@ using AsyncBlobCallback =
     void (*)(void* callback_context, double context_id, char* error, uint8_t* bytes, int32_t length);
 typedef NativeValue* (*InvokeModule)(void* callback_context,
                                      double context_id,
+                                     int64_t profile_link_id,
                                      SharedNativeString* moduleName,
                                      SharedNativeString* method,
                                      NativeValue* params,
@@ -68,7 +69,7 @@ typedef void (*ToBlob)(void* callback_context,
                        double devicePixelRatio);
 typedef void (*OnJSError)(double context_id, const char*);
 typedef void (*OnJSLog)(double context_id, int32_t level, const char*);
-typedef void (*FlushUICommand)(double context_id, void* native_binding_object, uint32_t reason);
+typedef void (*FlushUICommand)(double context_id, void* native_binding_object);
 typedef void (
     *CreateBindingObject)(double context_id, void* native_binding_object, int32_t type, void* args, int32_t argc);
 typedef int8_t (*GetWidgetElementShape)(double context_id, void* native_binding_object, NativeValue* value);
@@ -117,6 +118,18 @@ enum FlushUICommandReason : uint32_t {
   kDependentsAll = 1 << 4
 };
 
+inline bool isUICommandReasonDependsOnElement(uint32_t reason) {
+  return (reason & kDependentsOnElement) != 0;
+}
+
+inline bool isUICommandReasonDependsOnLayout(uint32_t reason) {
+  return (reason & kDependentsOnLayout) != 0;
+}
+
+inline bool isUICommandReasonDependsOnAll(uint32_t reason) {
+  return (reason & kDependentsAll) != 0;
+}
+
 class DartIsolateContext;
 
 class DartMethodPointer {
@@ -129,6 +142,7 @@ class DartMethodPointer {
   NativeValue* invokeModule(bool is_dedicated,
                             void* callback_context,
                             double context_id,
+                            int64_t profile_link_id,
                             SharedNativeString* moduleName,
                             SharedNativeString* method,
                             NativeValue* params,
@@ -158,7 +172,7 @@ class DartMethodPointer {
               AsyncBlobCallback blobCallback,
               void* element_ptr,
               double devicePixelRatio);
-  void flushUICommand(bool is_dedicated, double context_id, void* native_binding_object, uint32_t reason);
+  void flushUICommand(bool is_dedicated, double context_id, void* native_binding_object);
   void createBindingObject(bool is_dedicated,
                            double context_id,
                            void* native_binding_object,

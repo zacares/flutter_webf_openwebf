@@ -21,6 +21,7 @@ class Window extends EventTarget {
       : screen = Screen(context!.contextId, document.controller.view),
         super(context) {
     BindingBridge.listenEvent(this, 'load');
+    BindingBridge.listenEvent(this, 'gcopen');
   }
 
   @override
@@ -103,9 +104,9 @@ class Window extends EventTarget {
     if (contextId != null && event.type == EVENT_DOM_CONTENT_LOADED ||
         event.type == EVENT_LOAD ||
         event.type == EVENT_ERROR) {
-      flushUICommandWithContextId(contextId!, pointer!, dependentOnElementUICommandReason | dependentOnLayoutUICommandReason);
+      flushUICommandWithContextId(contextId!, pointer!);
     }
-    super.dispatchEvent(event);
+    return super.dispatchEvent(event);
   }
 
   @override

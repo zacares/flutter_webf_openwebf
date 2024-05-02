@@ -55,20 +55,6 @@ void UICommandBuffer::addCommand(UICommand command,
                                  void* nativePtr,
                                  void* nativePtr2,
                                  bool request_ui_update) {
-  if (!is_recording_) {
-    UICommandItem recording_item{static_cast<int32_t>(UICommand::kStartRecordingCommand), nullptr, nullptr, nullptr};
-    updateFlags(command);
-    addCommand(recording_item, false);
-    is_recording_ = true;
-  }
-
-  if (command == UICommand::kFinishRecordingCommand) {
-    if (size_ == 0)
-      return;
-    if (buffer_[size_ - 1].type == static_cast<int32_t>(UICommand::kFinishRecordingCommand))
-      return;
-  }
-
   UICommandItem item{static_cast<int32_t>(command), args_01.get(), nativePtr, nativePtr2};
   updateFlags(command);
   addCommand(item, request_ui_update);
@@ -100,16 +86,34 @@ void UICommandBuffer::addCommand(const UICommandItem& item, bool request_ui_upda
   size_++;
 }
 
+void UICommandBuffer::addCommands(const webf::UICommandItem* items, int64_t item_size, bool request_ui_update) {
+  if (UNLIKELY(!context_->dartIsolateContext()->valid())) {
+    return;
+  }
+
+  int64_t target_size = size_ + item_size;
+  if (target_size > max_size_) {
+    buffer_ = (UICommandItem*)realloc(buffer_, sizeof(UICommandItem) * target_size * 2);
+    max_size_ = target_size * 2;
+  }
+
+#if FLUTTER_BACKEND
+  if (UNLIKELY(request_ui_update && !update_batched_ && context_->IsContextValid())) {
+    context_->dartMethodPtr()->requestBatchUpdate(context_->isDedicated(), context_->contextId());
+    update_batched_ = true;
+  }
+#endif
+
+  std::memcpy(buffer_ + size_, items, sizeof(UICommandItem) * item_size);
+  size_ = target_size;
+}
+
 UICommandItem* UICommandBuffer::data() {
   return buffer_;
 }
 
 uint32_t UICommandBuffer::kindFlag() {
   return kind_flag;
-}
-
-bool UICommandBuffer::isRecording() {
-  return is_recording_;
 }
 
 int64_t UICommandBuffer::size() {

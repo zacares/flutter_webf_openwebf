@@ -3,7 +3,7 @@
  */
 
 #include "dart_isolate_context.h"
-#include <set>
+#include <unordered_set>
 #include "defined_properties_initializer.h"
 #include "event_factory.h"
 #include "html_element_factory.h"
@@ -15,7 +15,7 @@
 
 namespace webf {
 
-thread_local std::set<DartWireContext*> alive_wires;
+thread_local std::unordered_set<DartWireContext*> alive_wires;
 
 PageGroup::~PageGroup() {
   for (auto page : pages_) {
@@ -45,9 +45,10 @@ void DeleteDartWire(DartWireContext* wire) {
   delete wire;
 }
 
-static void ClearUpWires() {
+static void ClearUpWires(JSRuntime* runtime) {
   for (auto& wire : alive_wires) {
-    delete wire;
+    JS_FreeValueRT(runtime, wire->jsObject.QJSValue());
+    wire->disposed = true;
   }
   alive_wires.clear();
 }
@@ -92,16 +93,17 @@ void DartIsolateContext::FinalizeJSRuntime() {
   HTMLElementFactory::Dispose();
   SVGElementFactory::Dispose();
   EventFactory::Dispose();
-  ClearUpWires();
+  ClearUpWires(runtime_);
   JS_TurnOnGC(runtime_);
   JS_FreeRuntime(runtime_);
   runtime_ = nullptr;
   is_name_installed_ = false;
 }
 
-DartIsolateContext::DartIsolateContext(const uint64_t* dart_methods, int32_t dart_methods_length)
+DartIsolateContext::DartIsolateContext(const uint64_t* dart_methods, int32_t dart_methods_length, bool profile_enabled)
     : is_valid_(true),
       running_thread_(std::this_thread::get_id()),
+      profiler_(std::make_unique<WebFProfiler>(profile_enabled)),
       dart_method_ptr_(std::make_unique<DartMethodPointer>(this, dart_methods, dart_methods_length)) {
   is_valid_ = true;
   running_dart_isolates++;
@@ -128,10 +130,15 @@ void DartIsolateContext::Dispose(multi_threading::Callback callback) {
 void DartIsolateContext::InitializeNewPageInJSThread(PageGroup* page_group,
                                                      DartIsolateContext* dart_isolate_context,
                                                      double page_context_id,
+                                                     int32_t sync_buffer_size,
                                                      Dart_Handle dart_handle,
                                                      AllocateNewPageCallback result_callback) {
+  dart_isolate_context->profiler()->StartTrackInitialize();
   DartIsolateContext::InitializeJSRuntime();
-  auto* page = new WebFPage(dart_isolate_context, true, page_context_id, nullptr);
+  auto* page = new WebFPage(dart_isolate_context, true, sync_buffer_size, page_context_id, nullptr);
+
+  dart_isolate_context->profiler()->FinishTrackInitialize();
+
   dart_isolate_context->dispatcher_->PostToDart(true, HandleNewPageResult, page_group, dart_handle, result_callback,
                                                 page);
 }
@@ -155,6 +162,7 @@ void DartIsolateContext::DisposePageInJSThread(DartIsolateContext* dart_isolate_
 }
 
 void* DartIsolateContext::AddNewPage(double thread_identity,
+                                     int32_t sync_buffer_size,
                                      Dart_Handle dart_handle,
                                      AllocateNewPageCallback result_callback) {
   bool is_in_flutter_ui_thread = thread_identity < 0;
@@ -175,12 +183,15 @@ void* DartIsolateContext::AddNewPage(double thread_identity,
   }
 
   dispatcher_->PostToJs(true, thread_group_id, InitializeNewPageInJSThread, page_group, this, thread_identity,
-                        dart_handle, result_callback);
+                        sync_buffer_size, dart_handle, result_callback);
   return nullptr;
 }
 
 void* DartIsolateContext::AddNewPageSync(double thread_identity) {
-  auto page = std::make_unique<WebFPage>(this, false, thread_identity, nullptr);
+  profiler()->StartTrackSteps("WebFPage::Initialize");
+  auto page = std::make_unique<WebFPage>(this, false, 0, thread_identity, nullptr);
+  profiler()->FinishTrackSteps();
+
   void* p = page.get();
   pages_in_ui_thread_.emplace(std::move(page));
   return p;

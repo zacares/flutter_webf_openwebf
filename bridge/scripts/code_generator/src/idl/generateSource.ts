@@ -350,7 +350,7 @@ auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ?
 ${nativeArguments.length > 0 ? `NativeValue arguments[] = {
   ${nativeArguments.join(',\n')}
 }` : 'NativeValue* arguments = nullptr;'};
-${returnValueAssignment}self->InvokeBindingMethod(binding_call_methods::k${declare.name}, ${nativeArguments.length}, arguments, FlushUICommandReason::kDependentsOnElement${isLayoutIndependent ? '| FlushUICommandReason::kDependentsOnElement' : ''}, exception_state);
+${returnValueAssignment}self->InvokeBindingMethod(binding_call_methods::k${declare.name}, ${nativeArguments.length}, arguments, FlushUICommandReason::kDependentsOnElement${isLayoutIndependent ? '| FlushUICommandReason::kDependentsOnLayout' : ''}, exception_state);
 ${returnValueAssignment.length > 0 ? `return Converter<${generateIDLTypeConverter(declare.returnType)}>::ToValue(NativeValueConverter<${generateNativeValueTypeConverter(declare.returnType)}>::FromNativeValue(native_value))` : ''};
   `.trim();
 }
@@ -530,12 +530,17 @@ function generateFunctionBody(blob: IDLBlob, declare: FunctionDeclaration, optio
   ExceptionState exception_state;
   ExecutingContext* context = ExecutingContext::From(ctx);
   if (!context->IsContextValid()) return JS_NULL;
+  
+  context->dartIsolateContext()->profiler()->StartTrackSteps("${getClassName(blob)}::${declare.name}");
+  
   MemberMutationScope scope{context};
   ${returnValueInit}
 
   do {  // Dummy loop for use of 'break'.
 ${addIndent(callBody, 4)}
   } while (false);
+  
+   context->dartIsolateContext()->profiler()->FinishTrackSteps();
 
   if (UNLIKELY(exception_state.HasException())) {
     return exception_state.ToQuickJS();

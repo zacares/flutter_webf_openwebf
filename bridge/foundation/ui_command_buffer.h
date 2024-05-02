@@ -77,13 +77,13 @@ class UICommandBuffer {
                   bool request_ui_update = true);
   UICommandItem* data();
   uint32_t kindFlag();
-  bool isRecording();
   int64_t size();
   bool empty();
   void clear();
 
  private:
   void addCommand(const UICommandItem& item, bool request_ui_update = true);
+  void addCommands(const UICommandItem* items, int64_t item_size, bool request_ui_update = true);
   void updateFlags(UICommand command);
 
   ExecutingContext* context_{nullptr};
@@ -92,7 +92,7 @@ class UICommandBuffer {
   bool update_batched_{false};
   int64_t size_{0};
   int64_t max_size_{MAXIMUM_UI_COMMAND_SIZE};
-  bool is_recording_{false};
+  friend class SharedUICommand;
 };
 
 }  // namespace webf

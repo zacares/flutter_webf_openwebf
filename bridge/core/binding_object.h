@@ -8,7 +8,7 @@
 
 #include <include/dart_api_dl.h>
 #include <cinttypes>
-#include <set>
+#include <unordered_set>
 #include "bindings/qjs/atomic_string.h"
 #include "bindings/qjs/script_wrappable.h"
 #include "core/dart_methods.h"
@@ -25,6 +25,7 @@ class ScriptPromiseResolver;
 class DartIsolateContext;
 
 using InvokeBindingsMethodsFromNative = void (*)(double contextId,
+                                                 int64_t profile_id,
                                                  const NativeBindingObject* binding_object,
                                                  NativeValue* return_value,
                                                  NativeValue* method,
@@ -34,6 +35,7 @@ using InvokeBindingsMethodsFromNative = void (*)(double contextId,
 using DartInvokeResultCallback = void (*)(Dart_Handle dart_object, NativeValue* result);
 
 using InvokeBindingMethodsFromDart = void (*)(NativeBindingObject* binding_object,
+                                              int64_t profile_id,
                                               NativeValue* method,
                                               int32_t argc,
                                               NativeValue* argv,
@@ -46,6 +48,7 @@ struct NativeBindingObject : public DartReadable {
 
   static void HandleCallFromDartSide(DartIsolateContext* dart_isolate_context,
                                      NativeBindingObject* binding_object,
+                                     int64_t profile_id,
                                      NativeValue* method,
                                      int32_t argc,
                                      NativeValue* argv,
@@ -116,6 +119,8 @@ class BindingObject : public ScriptWrappable {
   NativeValue SetBindingProperty(const AtomicString& prop, NativeValue value, ExceptionState& exception_state) const;
   NativeValue GetAllBindingPropertyNames(ExceptionState& exception_state) const;
 
+  void CollectElementDepsOnArgs(std::vector<NativeBindingObject*>& deps, size_t argc, const NativeValue* args) const;
+
   FORCE_INLINE NativeBindingObject* bindingObject() const { return binding_object_; }
 
   void Trace(GCVisitor* visitor) const;
@@ -146,7 +151,7 @@ class BindingObject : public ScriptWrappable {
 
  private:
   NativeBindingObject* binding_object_ = nullptr;
-  std::set<BindingObjectPromiseContext*> pending_promise_contexts_;
+  std::unordered_set<BindingObjectPromiseContext*> pending_promise_contexts_;
 };
 
 }  // namespace webf

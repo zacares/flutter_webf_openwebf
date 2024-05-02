@@ -277,10 +277,16 @@ class CSSBackgroundImage {
         Uri uri = Uri.parse(url);
         if (url.isNotEmpty) {
           uri = controller.uriParser!.resolve(Uri.parse(baseHref ?? controller.url), uri);
-          return BoxFitImage(
+          return _image = BoxFitImage(
             boxFit: renderStyle.backgroundSize.fit,
             url: uri,
             loadImage: _obtainImage,
+            onImageLoad: (int naturalWidth, int naturalHeight, int frameCount) {
+              if (frameCount > 1) {
+                renderStyle.target.forceToRepaintBoundary = true;
+                renderStyle.target.renderBoxModel!.invalidateBoxPainter();
+              }
+            },
             devicePixelRatio: window.devicePixelRatio
           );
         }
@@ -467,8 +473,6 @@ class CSSBackgroundImage {
       switch (image.runtimeType) {
         case NetworkImage:
           return (image as NetworkImage).url;
-        case CachedNetworkImage:
-          return (image as CachedNetworkImage).url;
         case FileImage:
           return (image as FileImage).file.uri.path;
         case MemoryImage:

@@ -6,8 +6,8 @@ import 'dart:io';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:webf/bridge.dart';
+import 'package:webf/foundation.dart';
 import 'package:webf/launcher.dart';
 import 'package:webf/dom.dart';
 
@@ -17,42 +17,13 @@ class UICommand {
   late final Pointer nativePtr;
   late final Pointer nativePtr2;
 
+  UICommand();
+  UICommand.from(this.type, this.args, this.nativePtr, this.nativePtr2);
+
   @override
   String toString() {
     return 'UICommand(type: $type, args: $args, nativePtr: $nativePtr, nativePtr2: $nativePtr2)';
   }
-}
-
-const int nodeCreationFlag = 1;
-const int nodeMutationFlag = 1 << 2;
-const int styleUpdateFlag = 1 << 3;
-const int eventFlag = 1 << 4;
-const int attributeUpdateFlag = 1 << 5;
-const int disposeBindingObjectFlag = 1 << 6;
-const int otherOperationFlag = 1 << 7;
-
-bool isCommandsContainsNodeCreation(int flag) {
-  return flag & nodeCreationFlag != 0;
-}
-
-bool isCommandsContainsNodeMutation(int flag) {
-  return flag & nodeMutationFlag != 0;
-}
-
-bool isCommandsContainsStyleUpdate(int flag) {
-  return flag & styleUpdateFlag != 0;
-}
-
-const int standardUICommandReason = 1;
-const int dependentOnElementUICommandReason = 1 << 2;
-const int dependentOnLayoutUICommandReason = 1 << 3;
-
-bool isFlushUICommandReasonDependsOnElement(int reason) {
-  return reason & dependentOnElementUICommandReason != 0;
-}
-
-bool isFlushUICommandReasonDependsLayoutStyle(int reason) {
-  return reason & dependentOnLayoutUICommandReason != 0;
 }
 
 // struct UICommandItem {
@@ -111,38 +82,8 @@ List<UICommand> nativeUICommandToDart(List<int> rawMemory, int commandLength, do
   return results;
 }
 
-bool shouldExecUICommands(WebFViewController view, bool isFinishedRecording, Pointer<NativeBindingObject> self, int commandFlag, int operationReason) {
-  if (isFinishedRecording) {
-    SchedulerBinding.instance.scheduleFrame();
-  }
-
-  bool isElementCreation = isCommandsContainsNodeCreation(commandFlag);
-  bool isElementMutation = isCommandsContainsNodeMutation(commandFlag);
-  bool isStyleUpdate = isCommandsContainsStyleUpdate(commandFlag);
-
-  bool isDependsOnElement = isFlushUICommandReasonDependsOnElement(operationReason);
-  if (isDependsOnElement) {
-    isDependsOnElement = !view.hasBindingObject(self);
-  }
-
-  bool isDependsOnStyleLayout = isFlushUICommandReasonDependsLayoutStyle(operationReason);
-
-  if (enableWebFCommandLog) {
-    print('''
-UI COMMAND CONDITION CHECK:
-  REASON: $operationReason
-  isElementCreation: $isElementCreation
-  isElementMutation: $isElementMutation
-  isDependsOnElement: $isDependsOnElement
-  isDependsOnStyleLayout: $isDependsOnStyleLayout
-  ''');
-  }
-  return isElementCreation || isElementMutation || isDependsOnElement || isDependsOnStyleLayout || isStyleUpdate;
-}
-
 void execUICommands(WebFViewController view, List<UICommand> commands) {
   Map<int, bool> pendingStylePropertiesTargets = {};
-  Set<int> pendingRecalculateTargets = {};
 
   for(UICommand command in commands) {
     UICommandType commandType = command.type;
@@ -172,43 +113,128 @@ void execUICommands(WebFViewController view, List<UICommand> commands) {
     try {
       switch (commandType) {
         case UICommandType.createElement:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createElement');
+          }
+
           view.createElement(nativePtr.cast<NativeBindingObject>(), command.args);
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
+
           break;
         case UICommandType.createDocument:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createDocument');
+          }
+
           view.initDocument(view, nativePtr.cast<NativeBindingObject>());
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.createWindow:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createWindow');
+          }
+
           view.initWindow(view, nativePtr.cast<NativeBindingObject>());
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.createTextNode:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createWindow');
+          }
+
           view.createTextNode(nativePtr.cast<NativeBindingObject>(), command.args);
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.createComment:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createWindow');
+          }
+
           view.createComment(nativePtr.cast<NativeBindingObject>());
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.disposeBindingObject:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createWindow');
+          }
+
           view.disposeBindingObject(view, nativePtr.cast<NativeBindingObject>());
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.addEvent:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.addEvent');
+          }
+
           Pointer<AddEventListenerOptions> eventListenerOptions = command.nativePtr2.cast<AddEventListenerOptions>();
           view.addEvent(nativePtr.cast<NativeBindingObject>(), command.args,
               addEventListenerOptions: eventListenerOptions);
+
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
+
           break;
         case UICommandType.removeEvent:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.removeEvent');
+          }
           bool isCapture = command.nativePtr2.address == 1;
           view.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args, isCapture: isCapture);
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.insertAdjacentNode:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.insertAdjacentNode');
+          }
           view.insertAdjacentNode(
               nativePtr.cast<NativeBindingObject>(), command.args, command.nativePtr2.cast<NativeBindingObject>());
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.removeNode:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.removeNode');
+          }
           view.removeNode(nativePtr.cast<NativeBindingObject>());
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.cloneNode:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.cloneNode');
+          }
           view.cloneNode(nativePtr.cast<NativeBindingObject>(), command.nativePtr2.cast<NativeBindingObject>());
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.setStyle:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.cloneNode');
+          }
           String value;
           if (command.nativePtr2 != nullptr) {
             Pointer<NativeString> nativeValue = command.nativePtr2.cast<NativeString>();
@@ -219,34 +245,72 @@ void execUICommands(WebFViewController view, List<UICommand> commands) {
           }
           view.setInlineStyle(nativePtr, command.args, value);
           pendingStylePropertiesTargets[nativePtr.address] = true;
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.clearStyle:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.clearStyle');
+          }
           view.clearInlineStyle(nativePtr);
           pendingStylePropertiesTargets[nativePtr.address] = true;
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.setAttribute:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.setAttribute');
+          }
           Pointer<NativeString> nativeKey = command.nativePtr2.cast<NativeString>();
           String key = nativeStringToString(nativeKey);
           freeNativeString(nativeKey);
           view.setAttribute(nativePtr.cast<NativeBindingObject>(), key, command.args);
-          pendingRecalculateTargets.add(nativePtr.address);
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.removeAttribute:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.setAttribute');
+          }
           String key = command.args;
           view.removeAttribute(nativePtr, key);
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.createDocumentFragment:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createDocumentFragment');
+          }
           view.createDocumentFragment(nativePtr.cast<NativeBindingObject>());
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.createSVGElement:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createSVGElement');
+          }
           view.createElementNS(nativePtr.cast<NativeBindingObject>(), SVG_ELEMENT_URI, command.args);
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         case UICommandType.createElementNS:
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.createElementNS');
+          }
           Pointer<NativeString> nativeNameSpaceUri = command.nativePtr2.cast<NativeString>();
           String namespaceUri = nativeStringToString(nativeNameSpaceUri);
           freeNativeString(nativeNameSpaceUri);
 
           view.createElementNS(nativePtr.cast<NativeBindingObject>(), namespaceUri, command.args);
+          if (enableWebFProfileTracking) {
+            WebFProfiler.instance.finishTrackUICommandStep();
+          }
           break;
         default:
           break;
@@ -256,22 +320,28 @@ void execUICommands(WebFViewController view, List<UICommand> commands) {
     }
   }
 
+  if (enableWebFProfileTracking) {
+    WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.flushPendingStyleProperties');
+  }
   // For pending style properties, we needs to flush to render style.
-  for (int address in pendingStylePropertiesTargets.keys) {
-    try {
-      view.flushPendingStyleProperties(address);
-    } catch (e, stack) {
-      print('$e\n$stack');
+  if (!view.rootController.shouldBlockingFlushingResolvedStyleProperties) {
+    // For pending style properties, we needs to flush to render style.
+    for (int address in pendingStylePropertiesTargets.keys) {
+      try {
+        view.flushPendingStyleProperties(address);
+      } catch (e, stack) {
+        print('$e\n$stack');
+      }
     }
+    pendingStylePropertiesTargets.clear();
   }
-  pendingStylePropertiesTargets.clear();
 
-  for (var address in pendingRecalculateTargets) {
-    try {
-      view.recalculateStyle(address);
-    } catch (e, stack) {
-      print('$e\n$stack');
-    }
+  if (enableWebFProfileTracking) {
+    WebFProfiler.instance.finishTrackUICommandStep();
+    WebFProfiler.instance.startTrackUICommandStep('FlushUICommand.recalculateStyle');
   }
-  pendingRecalculateTargets.clear();
+
+  if (enableWebFProfileTracking) {
+    WebFProfiler.instance.finishTrackUICommandStep();
+  }
 }

@@ -11,6 +11,7 @@
 #include <cinttypes>
 #include <string>
 #include "bindings/qjs/native_string_utils.h"
+#include "foundation/dart_readable.h"
 
 namespace webf {
 
@@ -35,7 +36,7 @@ class ExceptionState;
 class ScriptValue;
 
 // Exchange data struct between dart and C++
-struct NativeValue {
+struct NativeValue : public DartReadable {
   union {
     int64_t int64;
     double float64;
@@ -76,6 +77,8 @@ NativeValue Native_NewInt64(int64_t value);
 NativeValue Native_NewList(uint32_t argc, NativeValue* argv);
 NativeValue Native_NewPtr(JSPointerType pointerType, void* ptr);
 NativeValue Native_NewJSON(JSContext* ctx, const ScriptValue& value, ExceptionState& exception_state);
+
+JSPointerType GetPointerTypeOfNativePointer(NativeValue native_value);
 
 }  // namespace webf
 

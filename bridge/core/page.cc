@@ -24,11 +24,12 @@ ConsoleMessageHandler WebFPage::consoleMessageHandler{nullptr};
 
 WebFPage::WebFPage(DartIsolateContext* dart_isolate_context,
                    bool is_dedicated,
+                   size_t sync_buffer_size,
                    double context_id,
                    const JSExceptionHandler& handler)
     : ownerThreadId(std::this_thread::get_id()), dart_isolate_context_(dart_isolate_context) {
   context_ = new ExecutingContext(
-      dart_isolate_context, is_dedicated, context_id,
+      dart_isolate_context, is_dedicated, sync_buffer_size, context_id,
       [](ExecutingContext* context, const char* message) {
         if (context->IsContextValid()) {
           context->dartMethodPtr()->onJSError(context->isDedicated(), context->contextId(), message);
@@ -50,10 +51,12 @@ bool WebFPage::parseHTML(const char* code, size_t length) {
       return false;
     }
 
+    context_->dartIsolateContext()->profiler()->StartTrackSteps("HTMLParser::parseHTML");
     HTMLParser::parseHTML(code, length, context_->document()->documentElement());
+    context_->dartIsolateContext()->profiler()->FinishTrackSteps();
   }
 
-  context_->uiCommandBuffer()->addCommand(UICommand::kFinishRecordingCommand, nullptr, nullptr, nullptr);
+  context_->uiCommandBuffer()->AddCommand(UICommand::kFinishRecordingCommand, nullptr, nullptr, nullptr);
 
   return true;
 }
@@ -121,7 +124,7 @@ void WebFPage::evaluateScript(const char* script, size_t length, const char* url
   context_->EvaluateJavaScript(script, length, url, startLine);
 }
 
-uint8_t* WebFPage::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
+uint8_t* WebFPage::dumpByteCode(const char* script, size_t length, const char* url, uint64_t* byteLength) {
   if (!context_->IsContextValid())
     return nullptr;
   return context_->DumpByteCode(script, length, url, byteLength);

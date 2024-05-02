@@ -392,7 +392,12 @@ struct Converter<BlobPart> : public ConverterBase<BlobPart> {
     return BlobPart::Create(ctx, value, exception_state);
   }
 
-  static JSValue ToValue(JSContext* ctx, BlobPart* data) { return data->ToQuickJS(ctx); }
+  static JSValue ToValue(JSContext* ctx, BlobPart* data) {
+    if (data == nullptr)
+      return JS_NULL;
+
+    return data->ToQuickJS(ctx);
+  }
 };
 
 template <>
@@ -408,6 +413,17 @@ template <>
 struct Converter<JSEventListener> : public ConverterBase<JSEventListener> {
   static ImplType FromValue(JSContext* ctx, JSValue value, ExceptionState& exception_state) {
     assert(!JS_IsException(value));
+    if (JS_IsObject(value) && !JS_IsFunction(ctx, value)) {
+      JSValue handleEventMethod = JS_GetPropertyStr(ctx, value, "handleEvent");
+
+      if (JS_IsFunction(ctx, handleEventMethod)) {
+        auto result = JSEventListener::CreateOrNull(QJSFunction::Create(ctx, handleEventMethod, value));
+        JS_FreeValue(ctx, handleEventMethod);
+        return result;
+      }
+
+      return JSEventListener::CreateOrNull(nullptr);
+    }
     return JSEventListener::CreateOrNull(QJSFunction::Create(ctx, value));
   }
 };
@@ -458,6 +474,10 @@ struct Converter<IDLNullable<JSEventListener>> : public ConverterBase<JSEventLis
       return nullptr;
     }
 
+    if (!JS_IsFunction(ctx, value) && !JS_IsObject(value)) {
+      return nullptr;
+    }
+
     assert(!JS_IsException(value));
     return Converter<JSEventListener>::FromValue(ctx, value, exception_state);
   }
@@ -471,7 +491,12 @@ struct Converter<T, typename std::enable_if_t<std::is_base_of<DictionaryBase, T>
     return T::Create(ctx, value, exception_state);
   }
 
-  static JSValue ToValue(JSContext* ctx, typename T::ImplType value) { return value->toQuickJS(ctx); }
+  static JSValue ToValue(JSContext* ctx, typename T::ImplType value) {
+    if (value == nullptr)
+      return JS_NULL;
+
+    return value->toQuickJS(ctx);
+  }
 };
 
 template <typename T>
@@ -545,8 +570,16 @@ struct Converter<T, typename std::enable_if_t<std::is_base_of<ScriptWrappable, T
                                    ExceptionMessage::ArgumentNotOfType(argv_index, wrapper_type_info->className));
     return nullptr;
   }
-  static JSValue ToValue(JSContext* ctx, T* value) { return value->ToQuickJS(); }
-  static JSValue ToValue(JSContext* ctx, const T* value) { return value->ToQuickJS(); }
+  static JSValue ToValue(JSContext* ctx, T* value) {
+    if (value == nullptr)
+      return JS_NULL;
+    return value->ToQuickJS();
+  }
+  static JSValue ToValue(JSContext* ctx, const T* value) {
+    if (value == nullptr)
+      return JS_NULL;
+    return value->ToQuickJS();
+  }
 };
 
 template <typename T>

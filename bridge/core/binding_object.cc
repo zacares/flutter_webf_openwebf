@@ -25,6 +25,7 @@ static void ReturnEventResultToDart(Dart_Handle persistent_handle,
 }
 
 static void HandleCallFromDartSideWrapper(NativeBindingObject* binding_object,
+                                          int64_t profile_id,
                                           NativeValue* method,
                                           int32_t argc,
                                           NativeValue* argv,
@@ -39,7 +40,7 @@ static void HandleCallFromDartSideWrapper(NativeBindingObject* binding_object,
   auto context_id = binding_object->binding_target_->contextId();
 
   dart_isolate->dispatcher()->PostToJs(is_dedicated, context_id, NativeBindingObject::HandleCallFromDartSide,
-                                       dart_isolate, binding_object, method, argc, argv, persistent_handle,
+                                       dart_isolate, binding_object, profile_id, method, argc, argv, persistent_handle,
                                        result_callback);
 }
 
@@ -48,11 +49,17 @@ NativeBindingObject::NativeBindingObject(BindingObject* target)
 
 void NativeBindingObject::HandleCallFromDartSide(DartIsolateContext* dart_isolate_context,
                                                  NativeBindingObject* binding_object,
+                                                 int64_t profile_id,
                                                  NativeValue* native_method,
                                                  int32_t argc,
                                                  NativeValue* argv,
                                                  Dart_PersistentHandle dart_object,
                                                  DartInvokeResultCallback result_callback) {
+  if (binding_object->disposed_)
+    return;
+
+  dart_isolate_context->profiler()->StartTrackEvaluation(profile_id);
+
   AtomicString method = AtomicString(
       binding_object->binding_target_->ctx(),
       std::unique_ptr<AutoFreeNativeString>(reinterpret_cast<AutoFreeNativeString*>(native_method->u.ptr)));
@@ -60,6 +67,8 @@ void NativeBindingObject::HandleCallFromDartSide(DartIsolateContext* dart_isolat
 
   auto* return_value = new NativeValue();
   std::memcpy(return_value, &result, sizeof(NativeValue));
+
+  dart_isolate_context->profiler()->FinishTrackEvaluation(profile_id);
 
   dart_isolate_context->dispatcher()->PostToDart(binding_object->binding_target_->GetExecutingContext()->isDedicated(),
                                                  ReturnEventResultToDart, dart_object, return_value, result_callback);
@@ -76,7 +85,7 @@ BindingObject::~BindingObject() {
   // When a JSObject got finalized by QuickJS GC, we can not guarantee the ExecutingContext are still alive and
   // accessible.
   if (isContextValid(contextId())) {
-    GetExecutingContext()->uiCommandBuffer()->addCommand(UICommand::kDisposeBindingObject, nullptr, bindingObject(),
+    GetExecutingContext()->uiCommandBuffer()->AddCommand(UICommand::kDisposeBindingObject, nullptr, bindingObject(),
                                                          nullptr, false);
   }
 }
@@ -107,7 +116,17 @@ NativeValue BindingObject::InvokeBindingMethod(const AtomicString& method,
                                                const NativeValue* argv,
                                                uint32_t reason,
                                                ExceptionState& exception_state) const {
-  GetExecutingContext()->FlushUICommand(this, reason);
+  auto* context = GetExecutingContext();
+  auto* profiler = context->dartIsolateContext()->profiler();
+
+  profiler->StartTrackSteps("BindingObject::InvokeBindingMethod");
+
+  std::vector<NativeBindingObject*> invoke_elements_deps;
+  // Collect all DOM elements in arguments.
+  CollectElementDepsOnArgs(invoke_elements_deps, argc, argv);
+  // Make sure all these elements are ready in dart.
+  context->FlushUICommand(this, reason, invoke_elements_deps);
+
   NativeValue return_value = Native_NewNull();
   NativeValue native_method =
       NativeValueConverter<NativeTypeString>::ToNativeValue(GetExecutingContext()->ctx(), method);
@@ -116,10 +135,12 @@ NativeValue BindingObject::InvokeBindingMethod(const AtomicString& method,
   WEBF_LOG(INFO) << "[Dispatcher]: PostToDartSync method: InvokeBindingMethod; Call Begin";
 #endif
 
+  profiler->StartTrackLinkSteps("Call To Dart");
+
   GetDispatcher()->PostToDartSync(
       GetExecutingContext()->isDedicated(), contextId(),
-      [&](bool cancel, double contextId, const NativeBindingObject* binding_object, NativeValue* return_value,
-          NativeValue* method, int32_t argc, const NativeValue* argv) {
+      [&](bool cancel, double contextId, int64_t profile_id, const NativeBindingObject* binding_object,
+          NativeValue* return_value, NativeValue* method, int32_t argc, const NativeValue* argv) {
         if (cancel)
           return;
 
@@ -131,17 +152,22 @@ NativeValue BindingObject::InvokeBindingMethod(const AtomicString& method,
           WEBF_LOG(DEBUG) << "invoke_bindings_methods_from_native is nullptr" << std::endl;
           return;
         }
-        binding_object_->invoke_bindings_methods_from_native(contextId, binding_object, return_value, method, argc,
-                                                             argv);
+        binding_object_->invoke_bindings_methods_from_native(contextId, profile_id, binding_object, return_value,
+                                                             method, argc, argv);
 #if ENABLE_LOG
         WEBF_LOG(INFO) << "[Dispatcher]: PostToDartSync method: InvokeBindingMethod; Callback End";
 #endif
       },
-      GetExecutingContext()->contextId(), binding_object_, &return_value, &native_method, argc, argv);
+      GetExecutingContext()->contextId(), profiler->link_id(), binding_object_, &return_value, &native_method, argc,
+      argv);
 
 #if ENABLE_LOG
   WEBF_LOG(INFO) << "[Dispatcher]: PostToDartSync method: InvokeBindingMethod; Call End";
 #endif
+
+  profiler->FinishTrackLinkSteps();
+  profiler->FinishTrackSteps();
+
   return return_value;
 }
 
@@ -150,18 +176,30 @@ NativeValue BindingObject::InvokeBindingMethod(BindingMethodCallOperations bindi
                                                const NativeValue* argv,
                                                uint32_t reason,
                                                ExceptionState& exception_state) const {
-  GetExecutingContext()->FlushUICommand(this, reason);
+  auto* context = GetExecutingContext();
+  auto* profiler = context->dartIsolateContext()->profiler();
+
+  profiler->StartTrackSteps("BindingObject::InvokeBindingMethod");
+
+  std::vector<NativeBindingObject*> invoke_elements_deps;
+  // Collect all DOM elements in arguments.
+  CollectElementDepsOnArgs(invoke_elements_deps, argc, argv);
+  // Make sure all these elements are ready in dart.
+  context->FlushUICommand(this, reason, invoke_elements_deps);
+
   NativeValue return_value = Native_NewNull();
 
 #if ENABLE_LOG
   WEBF_LOG(INFO) << "[Dispatcher]: PostToDartSync method: InvokeBindingMethod; Call Begin";
 #endif
 
+  profiler->StartTrackLinkSteps("Call To Dart");
+
   NativeValue native_method = NativeValueConverter<NativeTypeInt64>::ToNativeValue(binding_method_call_operation);
   GetDispatcher()->PostToDartSync(
       GetExecutingContext()->isDedicated(), contextId(),
-      [&](bool cancel, double contextId, const NativeBindingObject* binding_object, NativeValue* return_value,
-          NativeValue* method, int32_t argc, const NativeValue* argv) {
+      [&](bool cancel, double contextId, int64_t profile_id, const NativeBindingObject* binding_object,
+          NativeValue* return_value, NativeValue* method, int32_t argc, const NativeValue* argv) {
         if (cancel)
           return;
 
@@ -173,17 +211,20 @@ NativeValue BindingObject::InvokeBindingMethod(BindingMethodCallOperations bindi
           WEBF_LOG(DEBUG) << "invoke_bindings_methods_from_native is nullptr" << std::endl;
           return;
         }
-        binding_object_->invoke_bindings_methods_from_native(contextId, binding_object, return_value, method, argc,
-                                                             argv);
+        binding_object_->invoke_bindings_methods_from_native(contextId, profile_id, binding_object, return_value,
+                                                             method, argc, argv);
 #if ENABLE_LOG
         WEBF_LOG(INFO) << "[Dispatcher]: PostToDartSync method: InvokeBindingMethod; Callback End";
 #endif
       },
-      GetExecutingContext()->contextId(), binding_object_, &return_value, &native_method, argc, argv);
+      context->contextId(), profiler->link_id(), binding_object_, &return_value, &native_method, argc, argv);
 
 #if ENABLE_LOG
   WEBF_LOG(INFO) << "[Dispatcher]: PostToDartSync method: InvokeBindingMethod; Call End";
 #endif
+
+  profiler->FinishTrackLinkSteps();
+  profiler->FinishTrackSteps();
 
   return return_value;
 }
@@ -197,8 +238,15 @@ NativeValue BindingObject::GetBindingProperty(const AtomicString& prop,
         "Can not get binding property on BindingObject, dart binding object had been disposed");
     return Native_NewNull();
   }
+
+  GetExecutingContext()->dartIsolateContext()->profiler()->StartTrackSteps("BindingObject::GetBindingProperty");
+
   const NativeValue argv[] = {Native_NewString(prop.ToNativeString(GetExecutingContext()->ctx()).release())};
-  return InvokeBindingMethod(BindingMethodCallOperations::kGetProperty, 1, argv, reason, exception_state);
+  NativeValue result = InvokeBindingMethod(BindingMethodCallOperations::kGetProperty, 1, argv, reason, exception_state);
+
+  GetExecutingContext()->dartIsolateContext()->profiler()->FinishTrackSteps();
+
+  return result;
 }
 
 NativeValue BindingObject::SetBindingProperty(const AtomicString& prop,
@@ -344,6 +392,20 @@ ScriptValue BindingObject::AnonymousAsyncFunctionCallback(JSContext* ctx,
 NativeValue BindingObject::GetAllBindingPropertyNames(ExceptionState& exception_state) const {
   return InvokeBindingMethod(BindingMethodCallOperations::kGetAllPropertyNames, 0, nullptr,
                              FlushUICommandReason::kDependentsOnElement, exception_state);
+}
+
+void BindingObject::CollectElementDepsOnArgs(std::vector<NativeBindingObject*>& deps,
+                                             size_t argc,
+                                             const webf::NativeValue* args) const {
+  for (int i = 0; i < argc; i++) {
+    const NativeValue& native_value = args[i];
+    if (native_value.tag == NativeTag::TAG_POINTER &&
+        GetPointerTypeOfNativePointer(native_value) == JSPointerType::NativeBindingObject) {
+      NativeBindingObject* ptr =
+          NativeValueConverter<NativeTypePointer<NativeBindingObject>>::FromNativeValue(native_value);
+      deps.emplace_back(ptr);
+    }
+  }
 }
 
 void BindingObject::Trace(GCVisitor* visitor) const {
